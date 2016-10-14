@@ -1,0 +1,31 @@
+{
+  "name": "Amazon Video",
+  "version": "0.2.0",
+  "content_scripts": [
+    {
+      "id": "source.amazonvideo/main",
+      "conditions": [
+        {
+          "pattern": "*://www.amazon.com/dp/*",
+          "pageUrl": {
+            "hostEquals": "www.amazon.com",
+            "pathPrefix": "/dp"
+          }
+        }
+      ],
+      "js": [
+        "vendor.js",
+        "shared.js",
+        "source/amazonvideo/amazonvideo.js"
+      ]
+    }
+  ],
+  "permissions": {
+    "origins": [
+      "*://atv-ps.amazon.com/cdp/catalog/*"
+    ]
+  },
+  "web_accessible_resources": [
+    "source/amazonvideo/shim/shim.js"
+  ]
+}
