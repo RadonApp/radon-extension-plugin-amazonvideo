@@ -221,8 +221,6 @@ export class AmazonVideoActivityService extends ActivityService {
             // Process state change
             this._onStateChanged(this._session.state, state);
         } else if(this._session.state === SessionState.playing && this._session.time !== null) {
-            this._session.state = state;
-
             // Emit progress
             this._progress();
         }
@@ -409,7 +407,15 @@ export class AmazonVideoActivityService extends ActivityService {
     }
 
     _progress() {
-        if(this._session === null || !this._shouldEmitProgress()) {
+        if(this._session === null) {
+            return;
+        }
+
+        if(this._session.state === SessionState.ended) {
+            return;
+        }
+
+        if(!this._shouldEmitProgress()) {
             return;
         }
 
@@ -417,6 +423,13 @@ export class AmazonVideoActivityService extends ActivityService {
         if(this._pauseTimeout !== null) {
             clearTimeout(this._pauseTimeout);
             this._pauseTimeout = null;
+        }
+
+        // Check if video has ended
+        if(this._session.state === SessionState.playing && this._session.progress >= 100) {
+            console.log('Video has reached 100% progress, marking the session as ended');
+            this._end();
+            return;
         }
 
         // Update state
