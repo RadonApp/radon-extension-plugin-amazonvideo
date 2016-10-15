@@ -177,7 +177,9 @@ export class AmazonVideoActivityService extends ActivityService {
             return;
         }
 
-        console.debug('Video progress (progress: %o, time: %o, duration: %o)', progress, time, duration);
+        if(isNaN(progress) || isNaN(time) || isNaN(duration)) {
+            return;
+        }
 
         if(this._session === null) {
             console.debug('No active session');
