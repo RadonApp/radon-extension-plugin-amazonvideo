@@ -5,7 +5,7 @@ import Manifest from '../../manifest.json';
 
 export class AmazonVideoPlugin extends SourcePlugin {
     constructor() {
-        super('amazonvideo', 'Amazon Video', Manifest);
+        super('amazonvideo', Manifest);
     }
 }
 
