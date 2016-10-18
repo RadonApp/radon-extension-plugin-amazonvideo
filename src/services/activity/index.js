@@ -186,6 +186,8 @@ export class AmazonVideoActivityService extends ActivityService {
             return;
         }
 
+        console.debug('Video progress (progress: %o, time: %o, duration: %o)', progress, time, duration);
+
         // Update activity state
         let state = this._session.state;
 

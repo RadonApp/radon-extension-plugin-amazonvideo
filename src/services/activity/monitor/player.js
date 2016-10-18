@@ -113,6 +113,7 @@ export default class PlayerMonitor extends EventEmitter {
         console.debug('Binding to player events');
 
         // Bind player events
+        this._addEventListener('loadstart', () => this._onVideoLoading());
         this._addEventListener('playing', () => this._onPlaying());
         this._addEventListener('pause', () => this.emit('paused'));
         this._addEventListener('ended', () => this.emit('ended'));
@@ -275,6 +276,24 @@ export default class PlayerMonitor extends EventEmitter {
         this._visible = visible;
     }
 
+    _onVideoLoading() {
+        console.debug('_onVideoLoading()', this._video);
+
+        // Update current identifier
+        let {changed, success} = this._updateIdentifier();
+
+        if(!success) {
+            return false;
+        }
+
+        // Emit event
+        if(changed) {
+            this.emit('created', this._currentKey, this._currentIdentifier);
+        }
+
+        return true;
+    }
+
     _onVideoLoaded(video) {
         this._video = video;
 
@@ -306,11 +325,13 @@ export default class PlayerMonitor extends EventEmitter {
             return false;
         }
 
+        // Emit event
         if(changed) {
             this.emit('created', this._currentKey, this._currentIdentifier);
+        } else {
+            this.emit('playing');
         }
 
-        this.emit('playing');
         return true;
     }
 
