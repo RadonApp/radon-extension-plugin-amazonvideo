@@ -1,6 +1,7 @@
 import {isDefined} from 'eon.extension.framework/core/helpers';
 import {Movie, Show, Season, Episode} from 'eon.extension.framework/models/metadata/video';
 
+import Log from '../../../core/logger';
 import Plugin from '../../../core/plugin';
 
 
@@ -16,7 +17,7 @@ export default class Parser {
             return Parser.parseEpisode(key, item, metadata.family.tvAncestors);
         }
 
-        console.warn('Unknown metadata type: %o', item.type);
+        Log.warn('Unknown metadata type: %o', item.type);
         return null;
     }
 

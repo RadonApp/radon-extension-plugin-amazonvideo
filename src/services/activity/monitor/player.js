@@ -3,6 +3,8 @@ import {isDefined} from 'eon.extension.framework/core/helpers';
 import EventEmitter from 'eventemitter3';
 import merge from 'lodash-es/merge';
 
+import Log from '../../../core/logger';
+
 
 export default class PlayerMonitor extends EventEmitter {
     constructor() {
@@ -19,7 +21,7 @@ export default class PlayerMonitor extends EventEmitter {
     }
 
     initialize() {
-        console.debug('Initializing player monitor');
+        Log.debug('Initializing player monitor');
 
         this._playerContent = null;
 
@@ -99,18 +101,18 @@ export default class PlayerMonitor extends EventEmitter {
 
     _observe(node, options) {
         if(!isDefined(node)) {
-            console.warn('Invalid node: %o', node);
+            Log.warn('Invalid node: %o', node);
             return false;
         }
 
-        console.log('Observing node: %o (options: %o)', node, options);
+        Log.info('Observing node: %o (options: %o)', node, options);
 
         this._observer.observe(node, options);
         return true;
     }
 
     _bindPlayerEvents() {
-        console.debug('Binding to player events');
+        Log.debug('Binding to player events');
 
         // Bind player events
         this._addEventListener('loadstart', () => this._onVideoLoading());
@@ -132,7 +134,7 @@ export default class PlayerMonitor extends EventEmitter {
     }
 
     _unbindPlayerEvents() {
-        console.debug('Unbinding from player events');
+        Log.debug('Unbinding from player events');
 
         // Unbind player events
         if(this._video !== null) {
@@ -146,7 +148,7 @@ export default class PlayerMonitor extends EventEmitter {
         }
 
         // Add event listener
-        console.debug('Adding event listener %o for type %o', listener, type);
+        Log.debug('Adding event listener %o for type %o', listener, type);
         this._video.addEventListener(type, listener);
 
         // Store listener reference
@@ -173,7 +175,7 @@ export default class PlayerMonitor extends EventEmitter {
             for(let i = 0; i < listeners.length; ++i) {
                 let listener = listeners[i];
 
-                console.debug('Removing event listener %o for type %o', listener, type);
+                Log.debug('Removing event listener %o for type %o', listener, type);
                 this._video.removeEventListener(type, listener);
             }
         }
@@ -196,7 +198,7 @@ export default class PlayerMonitor extends EventEmitter {
         } else if(mutation.type === 'attributes') {
             this._onNodeAttributeChanged(mutation.attributeName, mutation.target);
         } else {
-            console.debug('Unknown mutation:', mutation);
+            Log.debug('Unknown mutation:', mutation);
             return false;
         }
 
@@ -210,7 +212,7 @@ export default class PlayerMonitor extends EventEmitter {
             if(action === 'add') {
                 this._onNodeAdded(node);
             } else {
-                console.debug('Unknown mutation action %o for %o', action, node);
+                Log.debug('Unknown mutation action %o for %o', action, node);
             }
         }
     }
@@ -234,7 +236,7 @@ export default class PlayerMonitor extends EventEmitter {
         } else if(node.tagName === 'VIDEO') {
             this._onVideoLoaded(node);
         } else {
-            console.debug('Unknown node added: %o', node);
+            Log.debug('Unknown node added: %o', node);
             return false;
         }
 
@@ -250,7 +252,7 @@ export default class PlayerMonitor extends EventEmitter {
         if(node.id === 'dv-player-content' && attributeName === 'style') {
             this._onPlayerContentStyleChanged();
         } else {
-            console.debug('Unknown node attribute %o changed on %o', attributeName, node);
+            Log.debug('Unknown node attribute %o changed on %o', attributeName, node);
             return false;
         }
 
@@ -277,7 +279,7 @@ export default class PlayerMonitor extends EventEmitter {
     }
 
     _onVideoLoading() {
-        console.debug('_onVideoLoading()', this._video);
+        Log.debug('_onVideoLoading()', this._video);
 
         // Update current identifier
         let {changed, success} = this._updateIdentifier();
@@ -365,7 +367,7 @@ export default class PlayerMonitor extends EventEmitter {
         let episodesElement = document.querySelector('#dv-episode-list .dv-episode-wrap');
 
         if(!isDefined(episodesElement)) {
-            console.warn('Unable to find episodes element');
+            Log.warn('Unable to find episodes element');
             return null;
         }
 
@@ -404,7 +406,7 @@ export default class PlayerMonitor extends EventEmitter {
             return button.getAttribute('data-asin');
         }
 
-        console.warn('Unable to find episode (identifier: %o)', identifier);
+        Log.warn('Unable to find episode (identifier: %o)', identifier);
         return null;
     }
 
@@ -413,7 +415,7 @@ export default class PlayerMonitor extends EventEmitter {
         let contentTitlePanel = document.querySelector('#dv-web-player .contentTitlePanel');
 
         if(!isDefined(contentTitlePanel)) {
-            console.warn('Unable to find the "#dv-web-player .contentTitlePanel" node');
+            Log.warn('Unable to find the "#dv-web-player .contentTitlePanel" node');
             return null;
         }
 
@@ -425,7 +427,7 @@ export default class PlayerMonitor extends EventEmitter {
         let identifier = this._parseTitle(title, subtitle);
 
         if(!isDefined(identifier)) {
-            console.warn('Unable to retrieve item identifier');
+            Log.warn('Unable to retrieve item identifier');
             return null;
         }
 
@@ -433,7 +435,7 @@ export default class PlayerMonitor extends EventEmitter {
         let key = this._getAsin(identifier);
 
         if(!isDefined(key)) {
-            console.warn('Unable to retrieve item asin');
+            Log.warn('Unable to retrieve item asin');
             return null;
         }
 
@@ -488,7 +490,7 @@ export default class PlayerMonitor extends EventEmitter {
         }
 
         // Unknown item
-        console.warn('Unable to detect content (title: %o, subtitle: %o)', title, subtitle);
+        Log.warn('Unable to detect content (title: %o, subtitle: %o)', title, subtitle);
         return null;
     }
 

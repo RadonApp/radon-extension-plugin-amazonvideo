@@ -1,5 +1,7 @@
 import EventEmitter from 'eventemitter3';
 
+import Log from '../core/logger';
+
 
 class AmazonVideoShimApi extends EventEmitter {
     constructor() {
@@ -48,11 +50,11 @@ class AmazonVideoShimApi extends EventEmitter {
 
     _onEventReceived(e) {
         if(!e || !e.detail || !e.detail.type) {
-            console.error('Unknown event received:', e);
+            Log.error('Unknown event received:', e);
             return;
         }
 
-        console.debug('Received "' + e.detail.type + '" event:', e.detail.data);
+        Log.debug('Received "' + e.detail.type + '" event:', e.detail.data);
 
         // Emit event
         this.emit(e.detail.type, e.detail.data || null);
