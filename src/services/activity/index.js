@@ -13,7 +13,7 @@ import PlayerMonitor from './monitor/player';
 import Plugin from '../../core/plugin';
 import ShimApi from '../../api/shim';
 
-var PROGRESS_EVENT_INTERVAL = 5000;  // (in milliseconds)
+const PROGRESS_EVENT_INTERVAL = 5000;  // (in milliseconds)
 
 
 export class AmazonVideoActivityService extends ActivityService {

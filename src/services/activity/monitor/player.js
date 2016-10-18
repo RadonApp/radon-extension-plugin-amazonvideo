@@ -219,7 +219,7 @@ export default class PlayerMonitor extends EventEmitter {
 
     _onNodeAdded(node) {
         if(!isDefined(node)) {
-            return;
+            return false;
         }
 
         // Process node addition
@@ -481,12 +481,12 @@ export default class PlayerMonitor extends EventEmitter {
                 episode: {
                     title: episodeMatch[3],
                     season: episodeMatch[1],
-                    number: episodeMatch[2],
+                    number: episodeMatch[2]
                 },
                 show: {
-                    title: title,
+                    title: title
                 }
-            }
+            };
         }
 
         // Unknown item

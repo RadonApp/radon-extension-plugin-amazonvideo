@@ -41,7 +41,7 @@ class AmazonVideoMetadataApi {
                     ));
                 }
 
-                return response.json()
+                return response.json();
             })
             .then((data) => {
                 if(!isDefined(data) || !isDefined(data.catalogMetadata)) {

@@ -21,10 +21,10 @@ class AmazonVideoShimApi extends EventEmitter {
 
     request(type, data) {
         return new Promise((resolve, reject) => {
-            var requestId = this._nextRequestId++;
+            let requestId = this._nextRequestId++;
 
             // Construct request
-            var event = new CustomEvent('eon.request', {
+            let event = new CustomEvent('eon.request', {
                 detail: {
                     id: requestId,
                     type: type,
