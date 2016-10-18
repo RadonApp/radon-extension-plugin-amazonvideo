@@ -8,8 +8,13 @@
         {
           "pattern": "*://www.amazon.com/dp/*",
           "pageUrl": {
-            "hostEquals": "www.amazon.com",
-            "pathPrefix": "/dp"
+            "originAndPathMatches": ".*://www\\.amazon\\.com/dp/.*"
+          }
+        },
+        {
+          "pattern": "*://www.amazon.com/*/dp/*",
+          "pageUrl": {
+            "originAndPathMatches": ".*://www\\.amazon\\.com/.*/dp/.*"
           }
         }
       ],
