@@ -176,6 +176,9 @@
       },
       "if": {
         "after": false
+      },
+      "while": {
+        "after": false
       }
     }}],
     "space-before-blocks": [2, "always"],
