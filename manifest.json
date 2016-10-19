@@ -16,6 +16,18 @@
           "pageUrl": {
             "originAndPathMatches": ".*://www\\.amazon\\.com/.*/dp/.*"
           }
+        },
+        {
+          "pattern": "*://www.amazon.com/gp/product/*",
+          "pageUrl": {
+            "originAndPathMatches": ".*://www\\.amazon\\.com/gp/product/.*"
+          }
+        },
+        {
+          "pattern": "*://www.amazon.com/gp/video/detail/*",
+          "pageUrl": {
+            "originAndPathMatches": ".*://www\\.amazon\\.com/gp/video/detail/.*"
+          }
         }
       ],
       "js": [
