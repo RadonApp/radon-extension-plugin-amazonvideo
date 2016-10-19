@@ -66,6 +66,7 @@ export class AmazonVideoActivityService extends ActivityService {
 
         this.monitor.on('created', this._onCreated.bind(this));
         this.monitor.on('playing', this._onPlaying.bind(this));
+        this.monitor.on('seeked', this._onSeeked.bind(this));
         this.monitor.on('progress', this._onProgress.bind(this));
         this.monitor.on('paused', this._onPaused.bind(this));
         this.monitor.on('ended', this._onEnded.bind(this));
@@ -168,6 +169,31 @@ export class AmazonVideoActivityService extends ActivityService {
         // Clear stalled state
         this._session.stalledAt = null;
         this._session.stalledPreviousState = null;
+    }
+
+    _onSeeked(progress, time, duration) {
+        Log.trace('Video seeked (progress: %o, time: %o, duration: %o)', progress, time, duration);
+
+        if(!this._isPlayerVisible()) {
+            Log.debug('Player is not visible, ignoring "seeked" event');
+            return;
+        }
+
+        if(isNaN(progress) || isNaN(time) || isNaN(duration)) {
+            Log.info('Ignoring invalid "seeked" event');
+            return;
+        }
+
+        if(this._session === null) {
+            Log.debug('No active session, ignoring "seeked" event');
+            return;
+        }
+
+        // Update state
+        this._session.state = SessionState.playing;
+
+        // Emit event
+        this.bus.emit('activity.seeked', this._session.dump());
     }
 
     _onProgress(progress, time, duration) {

@@ -116,6 +116,7 @@ export default class PlayerMonitor extends EventEmitter {
 
         // Bind player events
         this._addEventListener('loadstart', () => this._onVideoLoading());
+        this._addEventListener('seeked', () => this._onVideoSeeked());
         this._addEventListener('playing', () => this._onPlaying());
         this._addEventListener('pause', () => this.emit('paused'));
         this._addEventListener('ended', () => this.emit('ended'));
@@ -311,6 +312,14 @@ export default class PlayerMonitor extends EventEmitter {
     _onVideoClosed() {
         // Emit "closed" event
         this.emit('closed', this._currentKey, this._currentIdentifier);
+    }
+
+    _onVideoSeeked() {
+        // Emit "seeked" event
+        let time = this._getPlayerTime();
+        let duration = this._getPlayerDuration();
+
+        this.emit('seeked', this._calculateProgress(time, duration), time, duration);
     }
 
     _onPlaying() {
