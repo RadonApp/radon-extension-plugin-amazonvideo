@@ -1,6 +1,6 @@
 {
   "name": "eon.extension.source.amazonvideo",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "main": "./src/index.js",
   "devDependencies": {
     "babel-core": "^6.11.4",

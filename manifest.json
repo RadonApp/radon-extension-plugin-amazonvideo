@@ -1,6 +1,6 @@
 {
   "name": "Amazon Video",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "content_scripts": [
     {
       "id": "source.amazonvideo/main",
