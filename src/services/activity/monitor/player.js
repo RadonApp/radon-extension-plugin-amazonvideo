@@ -1,4 +1,4 @@
-import {isDefined} from 'eon.extension.framework/core/helpers';
+import {isDefined, round} from 'eon.extension.framework/core/helpers';
 
 import EventEmitter from 'eventemitter3';
 import merge from 'lodash-es/merge';
@@ -105,7 +105,7 @@ export default class PlayerMonitor extends EventEmitter {
             return false;
         }
 
-        Log.info('Observing node: %o (options: %o)', node, options);
+        Log.trace('Observing node: %o (options: %o)', node, options);
 
         this._observer.observe(node, options);
         return true;
@@ -124,12 +124,7 @@ export default class PlayerMonitor extends EventEmitter {
             let time = this._getPlayerTime();
             let duration = this._getPlayerDuration();
 
-            this.emit(
-                'progress',
-                this._calculateProgress(time, duration),
-                time,
-                duration
-            );
+            this.emit('progress', this._calculateProgress(time, duration), time, duration);
         });
     }
 
@@ -198,7 +193,7 @@ export default class PlayerMonitor extends EventEmitter {
         } else if(mutation.type === 'attributes') {
             this._onNodeAttributeChanged(mutation.attributeName, mutation.target);
         } else {
-            Log.debug('Unknown mutation:', mutation);
+            Log.warn('Unknown mutation:', mutation);
             return false;
         }
 
@@ -212,7 +207,7 @@ export default class PlayerMonitor extends EventEmitter {
             if(action === 'add') {
                 this._onNodeAdded(node);
             } else {
-                Log.debug('Unknown mutation action %o for %o', action, node);
+                Log.warn('Unknown mutation action %o for %o', action, node);
             }
         }
     }
@@ -236,7 +231,7 @@ export default class PlayerMonitor extends EventEmitter {
         } else if(node.tagName === 'VIDEO') {
             this._onVideoLoaded(node);
         } else {
-            Log.debug('Unknown node added: %o', node);
+            Log.warn('Unknown node added: %o', node);
             return false;
         }
 
@@ -252,7 +247,7 @@ export default class PlayerMonitor extends EventEmitter {
         if(node.id === 'dv-player-content' && attributeName === 'style') {
             this._onPlayerContentStyleChanged();
         } else {
-            Log.debug('Unknown node attribute %o changed on %o', attributeName, node);
+            Log.warn('Unknown node attribute %o changed on %o', attributeName, node);
             return false;
         }
 
@@ -279,8 +274,6 @@ export default class PlayerMonitor extends EventEmitter {
     }
 
     _onVideoLoading() {
-        Log.debug('_onVideoLoading()', this._video);
-
         // Update current identifier
         let {changed, success} = this._updateIdentifier();
 
@@ -342,7 +335,7 @@ export default class PlayerMonitor extends EventEmitter {
     // region Helpers
 
     _calculateProgress(time, duration) {
-        return this._round2((parseFloat(time) / duration) * 100);
+        return round((parseFloat(time) / duration) * 100, 2);
     }
 
     _getAsin(identifier) {
@@ -367,7 +360,7 @@ export default class PlayerMonitor extends EventEmitter {
         let episodesElement = document.querySelector('#dv-episode-list .dv-episode-wrap');
 
         if(!isDefined(episodesElement)) {
-            Log.warn('Unable to find episodes element');
+            Log.error('Unable to find episodes element');
             return null;
         }
 
@@ -406,7 +399,7 @@ export default class PlayerMonitor extends EventEmitter {
             return button.getAttribute('data-asin');
         }
 
-        Log.warn('Unable to find episode (identifier: %o)', identifier);
+        Log.error('Unable to find episode (identifier: %o)', identifier);
         return null;
     }
 
@@ -415,7 +408,7 @@ export default class PlayerMonitor extends EventEmitter {
         let contentTitlePanel = document.querySelector('#dv-web-player .contentTitlePanel');
 
         if(!isDefined(contentTitlePanel)) {
-            Log.warn('Unable to find the "#dv-web-player .contentTitlePanel" node');
+            Log.error('Unable to find the "#dv-web-player .contentTitlePanel" node');
             return null;
         }
 
@@ -427,7 +420,7 @@ export default class PlayerMonitor extends EventEmitter {
         let identifier = this._parseTitle(title, subtitle);
 
         if(!isDefined(identifier)) {
-            Log.warn('Unable to retrieve item identifier');
+            Log.error('Unable to retrieve item identifier');
             return null;
         }
 
@@ -435,7 +428,7 @@ export default class PlayerMonitor extends EventEmitter {
         let key = this._getAsin(identifier);
 
         if(!isDefined(key)) {
-            Log.warn('Unable to retrieve item asin');
+            Log.error('Unable to retrieve item asin');
             return null;
         }
 
@@ -490,7 +483,7 @@ export default class PlayerMonitor extends EventEmitter {
         }
 
         // Unknown item
-        Log.warn('Unable to detect content (title: %o, subtitle: %o)', title, subtitle);
+        Log.error('Unable to detect content (title: %o, subtitle: %o)', title, subtitle);
         return null;
     }
 
@@ -521,10 +514,6 @@ export default class PlayerMonitor extends EventEmitter {
             changed: true,
             success: true
         };
-    }
-
-    _round2(num) {
-        return +(Math.round(num + 'e+2') + 'e-2');
     }
 
     // endregion

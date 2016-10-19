@@ -45,13 +45,13 @@ export class AmazonVideoActivityService extends ActivityService {
 
     bind() {
         if(document.body === null) {
-            Log.warn('Document body not loaded yet, will try again in 500ms');
+            Log.info('Document body not loaded yet, will try again in 500ms');
             setTimeout(() => this.bind(), 500);
             return;
         }
 
         if(document.querySelector('#dv-web-player') === null) {
-            Log.warn('Player not loaded yet, will try again in 500ms');
+            Log.info('Player not loaded yet, will try again in 500ms');
             setTimeout(() => this.bind(), 500);
             return;
         }
@@ -101,19 +101,19 @@ export class AmazonVideoActivityService extends ActivityService {
     // region Event handlers
 
     _onPlayerOpened(key, identifier) {
-        Log.info('Played opened (key: %o, identifier: %o)', key, identifier);
+        Log.trace('Played opened (key: %o, identifier: %o)', key, identifier);
     }
 
     _onPlayerClosed(key, identifier) {
-        Log.info('Played closed (key: %o, identifier: %o)', key, identifier);
+        Log.trace('Played closed (key: %o, identifier: %o)', key, identifier);
 
         if(!isDefined(this._session) || !isDefined(this._session.item)) {
-            Log.debug('No active session');
+            Log.debug('No active session, ignoring "closed" event');
             return;
         }
 
         if(this._session.item.id !== key) {
-            Log.debug('Session item identifier doesn\'t match');
+            Log.debug('Session identifier doesn\'t match, ignoring "closed" event');
             return;
         }
 
@@ -127,7 +127,7 @@ export class AmazonVideoActivityService extends ActivityService {
     }
 
     _onCreated(key, identifier) {
-        Log.info('Created (key: %o, identifier: %o)', key, identifier);
+        Log.trace('Created (key: %o, identifier: %o)', key, identifier);
 
         // Check if current session matches
         if(isDefined(this._session) && isDefined(this._session.item) && this._session.item.id === key) {
@@ -138,24 +138,22 @@ export class AmazonVideoActivityService extends ActivityService {
 
         // Create new session
         this._createSession(key, identifier).then((session) => {
-            // Emit "created" event
             this.bus.emit('activity.created', session.dump());
-        }, (error) => {
-            // Unable to create session
-            Log.warn('Unable to create session:', error);
+        }, (err) => {
+            Log.error('Unable to create session:', err);
         });
     }
 
     _onPlaying() {
+        Log.trace('Video playing');
+
         if(!this._isPlayerVisible()) {
             Log.debug('Player is not visible, ignoring "playing" event');
             return;
         }
 
-        Log.debug('Video playing');
-
         if(this._session === null) {
-            Log.debug('No active session');
+            Log.debug('No active session, ignoring "playing" event');
             return;
         }
 
@@ -173,21 +171,22 @@ export class AmazonVideoActivityService extends ActivityService {
     }
 
     _onProgress(progress, time, duration) {
+        Log.trace('Video progress (progress: %o, time: %o, duration: %o)', progress, time, duration);
+
         if(!this._isPlayerVisible()) {
             Log.debug('Player is not visible, ignoring "progress" event');
             return;
         }
 
         if(isNaN(progress) || isNaN(time) || isNaN(duration)) {
+            Log.info('Ignoring invalid "progress" event');
             return;
         }
 
         if(this._session === null) {
-            Log.debug('No active session');
+            Log.debug('No active session, ignoring "progress" event');
             return;
         }
-
-        Log.debug('Video progress (progress: %o, time: %o, duration: %o)', progress, time, duration);
 
         // Update activity state
         let state = this._session.state;
@@ -232,12 +231,12 @@ export class AmazonVideoActivityService extends ActivityService {
     }
 
     _onStateChanged(previous, current) {
+        Log.trace('Video state changed: %o -> %o', previous, current);
+
         if(this._session === null) {
-            Log.debug('No active session');
+            Log.debug('No active session, ignoring state change');
             return;
         }
-
-        Log.debug('Video state changed: %o -> %o', previous, current);
 
         // Started
         if((previous === SessionState.null || previous === SessionState.paused) && current === SessionState.playing) {
@@ -253,7 +252,7 @@ export class AmazonVideoActivityService extends ActivityService {
             return;
         }
 
-        Log.warn('Unknown state transition: %o -> %o', previous, current);
+        Log.info('Unknown state transition: %o -> %o', previous, current);
 
         // Update state
         this._session.state = current;
@@ -267,15 +266,15 @@ export class AmazonVideoActivityService extends ActivityService {
     }
 
     _onPaused() {
+        Log.trace('Video paused');
+
         if(!this._isPlayerVisible()) {
             Log.debug('Player is not visible, ignoring "paused" event');
             return;
         }
 
-        Log.debug('Video paused');
-
         if(this._session === null) {
-            Log.debug('No active session');
+            Log.debug('No active session, ignoring "paused" event');
             return;
         }
 
@@ -289,15 +288,15 @@ export class AmazonVideoActivityService extends ActivityService {
     }
 
     _onEnded() {
+        Log.trace('Video ended');
+
         if(!this._isPlayerVisible()) {
             Log.debug('Player is not visible, ignoring "ended" event');
             return;
         }
 
-        Log.debug('Video ended');
-
         if(this._session === null) {
-            Log.debug('No active session');
+            Log.debug('No active session, ignoring "ended" event');
             return;
         }
 
@@ -335,7 +334,7 @@ export class AmazonVideoActivityService extends ActivityService {
                 this._video = Parser.parse(key, metadata);
 
                 if(this._video === null) {
-                    Log.warn('Unable to parse metadata:', metadata);
+                    Log.error('Unable to parse metadata:', metadata);
 
                     // Reject promise
                     reject(new Error('Unable to parse metadata'));

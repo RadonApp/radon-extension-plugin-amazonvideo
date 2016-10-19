@@ -17,7 +17,7 @@ export default class Parser {
             return Parser.parseEpisode(key, item, metadata.family.tvAncestors);
         }
 
-        Log.warn('Unknown metadata type: %o', item.type);
+        Log.error('Unknown metadata type: %o', item.type);
         return null;
     }
 

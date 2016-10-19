@@ -50,11 +50,11 @@ class AmazonVideoShimApi extends EventEmitter {
 
     _onEventReceived(e) {
         if(!e || !e.detail || !e.detail.type) {
-            Log.error('Unknown event received:', e);
+            Log.warn('Received an unknown event:', e);
             return;
         }
 
-        Log.debug('Received "' + e.detail.type + '" event:', e.detail.data);
+        Log.trace('Received "' + e.detail.type + '" event:', e.detail.data);
 
         // Emit event
         this.emit(e.detail.type, e.detail.data || null);
