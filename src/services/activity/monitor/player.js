@@ -233,17 +233,17 @@ export default class PlayerMonitor extends EventEmitter {
         // Process node addition
         if(node.id === 'dv-web-player') {
             this._onNodeAdded(node.querySelector('.webPlayerContainer'));
-        } else if(node.className === 'webPlayerContainer') {
+        } else if(hasClass('webPlayerContainer')) {
             this._onNodeAdded(node.querySelector('.webPlayerElement'));
-        } else if(node.className === 'webPlayerElement') {
+        } else if(hasClass('webPlayerElement')) {
             this._onNodeAdded(node.querySelector('.cascadesContainer'));
-        } else if(node.className === 'cascadesContainer') {
+        } else if(hasClass('cascadesContainer')) {
             this._onNodeAdded(node.querySelector('.contentTitlePanel'));
             this._onNodeAdded(node.querySelector('.rendererContainer'));
-        } else if(node.className === 'contentTitlePanel') {
+        } else if(hasClass('contentTitlePanel')) {
             this._onNodeAdded(node.querySelector('.title'));
             this._onNodeAdded(node.querySelector('.subtitle'));
-        } else if(node.className === 'rendererContainer') {
+        } else if(hasClass('rendererContainer')) {
             this._onNodeAdded(node.querySelector('video'));
         } else if(node.tagName === 'VIDEO') {
             this._onVideoLoaded(node);
@@ -317,7 +317,7 @@ export default class PlayerMonitor extends EventEmitter {
                 return true;
             }, (err) => {
                 Log.warn('Unable to update identifier, error:', err);
-            })
+            });
     }
 
     _onVideoLoaded(video) {
@@ -337,7 +337,7 @@ export default class PlayerMonitor extends EventEmitter {
                 return true;
             }, (err) => {
                 Log.warn('Unable to update identifier, error:', err);
-            })
+            });
     }
 
     _onVideoClosed() {
@@ -421,7 +421,7 @@ export default class PlayerMonitor extends EventEmitter {
                     // Detect content
                     let identifier = this._parseTitle(title, subtitle);
 
-                    if (!isDefined(identifier)) {
+                    if(!isDefined(identifier)) {
                         if(attempts < 50) {
                             attempts += 1;
                             setTimeout(get, 100);
@@ -435,7 +435,7 @@ export default class PlayerMonitor extends EventEmitter {
                     // Retrieve page key (movie, season or episode asin)
                     let key = this._getPageAsin();
 
-                    if (!isDefined(key)) {
+                    if(!isDefined(key)) {
                         reject(new Error('Unable to retrieve page asin'));
                         return;
                     }
@@ -518,8 +518,8 @@ export default class PlayerMonitor extends EventEmitter {
                 type: 'episode',
                 episode: {
                     title: episodeMatch[3],
-                    season: parseInt(episodeMatch[1]),
-                    number: parseInt(episodeMatch[2])
+                    season: parseInt(episodeMatch[1], 10),
+                    number: parseInt(episodeMatch[2], 10)
                 },
                 show: {
                     title: title

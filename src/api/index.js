@@ -4,7 +4,7 @@ import merge from 'lodash-es/merge';
 import URI from 'urijs';
 
 import ShimApi from '../core/shim';
-import MetadataInterface from './interfaces/metadata'
+import MetadataInterface from './interfaces/metadata';
 
 const BASE_URL = 'https://atv-ps.amazon.com';
 

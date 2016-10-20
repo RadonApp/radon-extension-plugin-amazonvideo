@@ -1,4 +1,3 @@
-import {isDefined} from 'eon.extension.framework/core/helpers';
 import {Movie, Show, Season, Episode} from 'eon.extension.framework/models/metadata/video';
 
 import Log from '../../../core/logger';

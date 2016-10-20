@@ -166,7 +166,9 @@ export default class MetadataInterface extends Interface {
                 );
             }
 
-            console.debug('Received an unknown %o item: %o', item.type, item);
+            return Promise.reject(new Error(
+                'Unknown item content type: "' + item.contentType + '"'
+            ));
         });
     }
 
