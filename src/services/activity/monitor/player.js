@@ -234,17 +234,17 @@ export default class PlayerMonitor extends EventEmitter {
         // Process node addition
         if(node.id === 'dv-web-player') {
             this._onNodeAdded(node.querySelector('.webPlayerContainer'));
-        } else if(hasClass('webPlayerContainer')) {
+        } else if(hasClass(node, 'webPlayerContainer')) {
             this._onNodeAdded(node.querySelector('.webPlayerElement'));
-        } else if(hasClass('webPlayerElement')) {
+        } else if(hasClass(node, 'webPlayerElement')) {
             this._onNodeAdded(node.querySelector('.cascadesContainer'));
-        } else if(hasClass('cascadesContainer')) {
+        } else if(hasClass(node, 'cascadesContainer')) {
             this._onNodeAdded(node.querySelector('.contentTitlePanel'));
             this._onNodeAdded(node.querySelector('.rendererContainer'));
-        } else if(hasClass('contentTitlePanel')) {
+        } else if(hasClass(node, 'contentTitlePanel')) {
             this._onNodeAdded(node.querySelector('.title'));
             this._onNodeAdded(node.querySelector('.subtitle'));
-        } else if(hasClass('rendererContainer')) {
+        } else if(hasClass(node, 'rendererContainer')) {
             this._onNodeAdded(node.querySelector('video'));
         } else if(node.tagName === 'VIDEO') {
             this._onVideoLoaded(node);
