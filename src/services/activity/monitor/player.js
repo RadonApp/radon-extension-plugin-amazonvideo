@@ -8,6 +8,7 @@ import Log from '../../../core/logger';
 
 const URL_PATTERNS = [
     /^https:\/\/www\.amazon\.com\/dp\/([a-z0-9]*).*?$/i,
+    /^https:\/\/www\.amazon\.com\/.*?\/dp\/([a-z0-9]*).*?$/i,
     /^https:\/\/www\.amazon\.com\/gp\/product\/([a-z0-9]*).*?$/i,
     /^https:\/\/www\.amazon\.com\/gp\/video\/detail\/([a-z0-9]*).*?$/i
 ];
