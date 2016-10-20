@@ -8,47 +8,73 @@ import Plugin from '../../../core/plugin';
 export default class Parser {
     // region Public methods
 
-    static parse(key, metadata) {
-        let item = metadata.catalog;
-
-        if(item.type === 'MOVIE') {
-            return Parser.parseMovie(key, item);
-        } else if(item.type === 'EPISODE') {
-            return Parser.parseEpisode(key, item, metadata.family.tvAncestors);
+    static parse(item) {
+        if(item.contentType === 'MOVIE') {
+            return Parser.parseMovie(item);
         }
 
-        Log.error('Unknown metadata type: %o', item.type);
+        if(item.contentType === 'EPISODE') {
+            return Parser.parseEpisode(item);
+        }
+
+        Log.error('Unknown metadata type: %o', item.contentType);
         return null;
     }
 
-    static parseMovie(key, movie) {
-        return Parser._constructMovie(key, movie);
+    static parseMovie(movieInfo) {
+        // Retrieve year from release date
+        let year = null;
+
+        try {
+            let releaseDate = new Date(movieInfo.releaseOrFirstAiringDate.valueDate / 1000);
+
+            year = releaseDate.getFullYear();
+        } catch(err) {
+            console.warn('Unable to parse release date: %o', movieInfo.releaseOrFirstAiringDate.valueDate);
+        }
+
+        // Construct movie
+        return new Movie(
+            Plugin,
+            movieInfo.titleId,
+            movieInfo.title,
+            year,
+            movieInfo.runtime.valueMillis
+        );
     }
 
-    static parseEpisode(key, episode, ancestors) {
-        let show, season;
+    static parseEpisode(episodeInfo) {
+        let showInfo = Parser._findAncestor(episodeInfo, 'SERIES');
+        let seasonInfo = Parser._findAncestor(episodeInfo, 'SEASON');
 
-        // Find season and show items
-        ancestors.forEach((ancestor) => {
-            if(!isDefined(ancestor) || !isDefined(ancestor.catalog)) {
-                return;
-            }
+        // Construct show
+        let show = new Show(
+            Plugin,
+            showInfo.titleId,
+            showInfo.title
+        );
 
-            let item = ancestor.catalog;
+        // Construct season
+        let season = new Season(
+            Plugin,
+            seasonInfo.titleId,
+            seasonInfo.title,
+            null,
+            seasonInfo.number,
 
-            if(item.type === 'SHOW') {
-                show = item;
-            } else if(item.type === 'SEASON') {
-                season = item;
-            }
-        });
+            show
+        );
 
         // Construct episode
-        return Parser._constructEpisode(
-            key,
-            episode,
-            season,
-            show
+        return new Episode(
+            Plugin,
+            episodeInfo.titleId,
+            episodeInfo.title,
+            episodeInfo.number,
+            episodeInfo.runtime.valueMillis,
+
+            show,
+            season
         );
     }
 
@@ -56,47 +82,16 @@ export default class Parser {
 
     // region Private methods
 
-    static _constructMovie(key, movie) {
-        return new Movie(
-            Plugin,
-            key,
-            movie.title,
-            null,
-            movie.runtimeSeconds * 1000
-        );
-    }
+    static _findAncestor(item, contentType) {
+        for(let i = 0; i < item.ancestorTitles.length; ++i) {
+            let ancestor = item.ancestorTitles[i];
 
-    static _constructShow(show) {
-        return new Show(
-            Plugin,
-            show.id,
-            show.title
-        );
-    }
+            if(ancestor.contentType === contentType) {
+                return ancestor;
+            }
+        }
 
-    static _constructSeason(season, show) {
-        return new Season(
-            Plugin,
-            season.id,
-            season.title,
-            null,
-            season.seasonNumber,
-
-            Parser._constructShow(show)
-        );
-    }
-
-    static _constructEpisode(key, episode, season, show) {
-        return new Episode(
-            Plugin,
-            key,
-            episode.title,
-            episode.episodeNumber,
-            episode.runtimeSeconds * 1000,
-
-            Parser._constructShow(show),
-            Parser._constructSeason(season, show)
-        );
+        return null;
     }
 
     // endregion

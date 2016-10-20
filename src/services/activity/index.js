@@ -6,12 +6,12 @@ import MessagingBus from 'eon.extension.framework/messaging/bus';
 import Session, {SessionState} from 'eon.extension.framework/models/activity/session';
 import ActivityService from 'eon.extension.framework/services/source/activity';
 
+import Api from '../../api';
 import Log from '../../core/logger';
-import MetadataApi from '../../api/metadata';
 import Parser from './core/parser';
 import PlayerMonitor from './monitor/player';
 import Plugin from '../../core/plugin';
-import ShimApi from '../../api/shim';
+import ShimApi from '../../core/shim';
 
 const PROGRESS_EVENT_INTERVAL = 5000;  // (in milliseconds)
 
@@ -28,7 +28,6 @@ export class AmazonVideoActivityService extends ActivityService {
         this._pauseTimeout = null;
 
         this._session = null;
-        this._video = null;
 
     }
 
@@ -351,16 +350,15 @@ export class AmazonVideoActivityService extends ActivityService {
             }
 
             // Reset state
-            this._video = null;
             this._session = null;
 
-            // Retrieve video metadata
-            MetadataApi.get(key).then((metadata) => {
-                // Construct metadata object
-                this._video = Parser.parse(key, metadata);
+            // Retrieve item metadata
+            Api.metadata.resolve(key, identifier).then((item) => {
+                // Construct metadata
+                let metadata = Parser.parse(item);
 
-                if(this._video === null) {
-                    Log.error('Unable to parse metadata:', metadata);
+                if(!isDefined(metadata)) {
+                    Log.error('Unable to parse metadata:', item);
 
                     // Reject promise
                     reject(new Error('Unable to parse metadata'));
@@ -371,7 +369,7 @@ export class AmazonVideoActivityService extends ActivityService {
                 this._session = new Session(
                     this.plugin,
                     this._nextSessionKey++,
-                    this._video,
+                    metadata,
                     SessionState.LOADING
                 );
 
