@@ -1,9 +1,16 @@
-import {isDefined, round} from 'eon.extension.framework/core/helpers';
+import {hasClass, hasClassTree, isDefined, round} from 'eon.extension.framework/core/helpers';
 
 import EventEmitter from 'eventemitter3';
+import isEqual from 'lodash-es/isEqual';
 import merge from 'lodash-es/merge';
 
 import Log from '../../../core/logger';
+
+const URL_PATTERNS = [
+    /^https:\/\/www\.amazon\.com\/dp\/([a-z0-9]*).*?$/i,
+    /^https:\/\/www\.amazon\.com\/gp\/product\/([a-z0-9]*).*?$/i,
+    /^https:\/\/www\.amazon\.com\/gp\/video\/detail\/([a-z0-9]*).*?$/i
+];
 
 
 export default class PlayerMonitor extends EventEmitter {
@@ -13,7 +20,7 @@ export default class PlayerMonitor extends EventEmitter {
         this._listeners = {};
         this._observer = null;
         this._playerContent = null;
-        this._video = null;
+        this._metadata = null;
 
         this._currentKey = null;
         this._currentIdentifier = null;
@@ -39,7 +46,7 @@ export default class PlayerMonitor extends EventEmitter {
 
         // Reset state
         this._playerContent = null;
-        this._video = null;
+        this._metadata = null;
 
         // Create bind() promise
         return new Promise((resolve, reject) => {
@@ -93,7 +100,7 @@ export default class PlayerMonitor extends EventEmitter {
 
         // Reset state
         this._playerContent = null;
-        this._video = null;
+        this._metadata = null;
 
         // Emit player "closed" event
         this.emit('closed');
@@ -106,8 +113,13 @@ export default class PlayerMonitor extends EventEmitter {
         }
 
         Log.trace('Observing node: %o (options: %o)', node, options);
-
         this._observer.observe(node, options);
+
+        // Trigger initial events
+        if(node.id === 'dv-player-content') {
+            this._onPlayerContentStyleChanged();
+        }
+
         return true;
     }
 
@@ -133,19 +145,19 @@ export default class PlayerMonitor extends EventEmitter {
         Log.debug('Unbinding from player events');
 
         // Unbind player events
-        if(this._video !== null) {
+        if(this._metadata !== null) {
             this._removeEventListeners();
         }
     }
 
     _addEventListener(type, listener) {
-        if(!this._video) {
+        if(!this._metadata) {
             return false;
         }
 
         // Add event listener
         Log.debug('Adding event listener %o for type %o', listener, type);
-        this._video.addEventListener(type, listener);
+        this._metadata.addEventListener(type, listener);
 
         // Store listener reference
         if(typeof this._listeners[type] === 'undefined') {
@@ -157,7 +169,7 @@ export default class PlayerMonitor extends EventEmitter {
     }
 
     _removeEventListeners() {
-        if(!this._video) {
+        if(!this._metadata) {
             return false;
         }
 
@@ -172,7 +184,7 @@ export default class PlayerMonitor extends EventEmitter {
                 let listener = listeners[i];
 
                 Log.debug('Removing event listener %o for type %o', listener, type);
-                this._video.removeEventListener(type, listener);
+                this._metadata.removeEventListener(type, listener);
             }
         }
 
@@ -226,11 +238,23 @@ export default class PlayerMonitor extends EventEmitter {
         } else if(node.className === 'webPlayerElement') {
             this._onNodeAdded(node.querySelector('.cascadesContainer'));
         } else if(node.className === 'cascadesContainer') {
+            this._onNodeAdded(node.querySelector('.contentTitlePanel'));
             this._onNodeAdded(node.querySelector('.rendererContainer'));
+        } else if(node.className === 'contentTitlePanel') {
+            this._onNodeAdded(node.querySelector('.title'));
+            this._onNodeAdded(node.querySelector('.subtitle'));
         } else if(node.className === 'rendererContainer') {
             this._onNodeAdded(node.querySelector('video'));
         } else if(node.tagName === 'VIDEO') {
             this._onVideoLoaded(node);
+        } else if(hasClassTree(node, 'title', 'contentTitlePanel')) {
+            this._onPlaying();
+        } else if(hasClassTree(node, 'subtitle', 'contentTitlePanel')) {
+            this._onPlaying();
+        } else if(hasClassTree(node, null, 'title', 'contentTitlePanel')) {
+            this._onPlaying();
+        } else if(hasClassTree(node, null, 'subtitle', 'contentTitlePanel')) {
+            this._onPlaying();
         } else {
             Log.warn('Unknown node added: %o', node);
             return false;
@@ -263,11 +287,13 @@ export default class PlayerMonitor extends EventEmitter {
             return;
         }
 
+        Log.debug('Player visibility changed to %o', visible);
+
         // Emit change
         if(visible) {
-            this._onVideoOpened();
-        } if(!visible) {
-            this._onVideoClosed();
+            setTimeout(this._onVideoOpened.bind(this), 100);
+        } else {
+            setTimeout(this._onVideoClosed.bind(this), 100);
         }
 
         // Update current state
@@ -276,42 +302,48 @@ export default class PlayerMonitor extends EventEmitter {
 
     _onVideoLoading() {
         // Update current identifier
-        let {changed, success} = this._updateIdentifier();
+        return this._updateIdentifier()
+            .then((changed) => {
+                // Emit "created" event (if the identifier has changed)
+                if(changed) {
+                    Log.trace(
+                        'Identifier changed, emitting "created" event (key: %o, identifier: %o)',
+                        this._currentKey, this._currentIdentifier
+                    );
 
-        if(!success) {
-            return false;
-        }
+                    this.emit('created', this._currentKey, this._currentIdentifier);
+                }
 
-        // Emit event
-        if(changed) {
-            this.emit('created', this._currentKey, this._currentIdentifier);
-        }
-
-        return true;
+                return true;
+            }, (err) => {
+                Log.warn('Unable to update identifier, error:', err);
+            })
     }
 
     _onVideoLoaded(video) {
-        this._video = video;
+        this._metadata = video;
 
         // Bind to video player events
         this._bindPlayerEvents();
     }
 
     _onVideoOpened() {
-        if(!this._updateIdentifier().success) {
-            return false;
-        }
-
-        // Emit events
-        this.emit('opened', this._currentKey, this._currentIdentifier);
-        this.emit('created', this._currentKey, this._currentIdentifier);
-
-        return true;
+        // Update current identifier
+        return this._updateIdentifier()
+            .then(() => {
+                // Emit events
+                this.emit('opened', this._currentKey, this._currentIdentifier);
+                this.emit('created', this._currentKey, this._currentIdentifier);
+                return true;
+            }, (err) => {
+                Log.warn('Unable to update identifier, error:', err);
+            })
     }
 
     _onVideoClosed() {
         // Emit "closed" event
         this.emit('closed', this._currentKey, this._currentIdentifier);
+        return true;
     }
 
     _onVideoSeeked() {
@@ -323,20 +355,27 @@ export default class PlayerMonitor extends EventEmitter {
     }
 
     _onPlaying() {
-        let {changed, success} = this._updateIdentifier();
+        Log.trace('Playing');
 
-        if(!success) {
-            return false;
-        }
+        // Update current identifier
+        return this._updateIdentifier()
+            .then((changed) => {
+                // Emit event
+                if(changed) {
+                    Log.trace(
+                        'Identifier changed, emitting "created" event (key: %o, identifier: %o)',
+                        this._currentKey, this._currentIdentifier
+                    );
 
-        // Emit event
-        if(changed) {
-            this.emit('created', this._currentKey, this._currentIdentifier);
-        } else {
-            this.emit('playing');
-        }
+                    this.emit('created', this._currentKey, this._currentIdentifier);
+                } else {
+                    this.emit('playing');
+                }
 
-        return true;
+                return true;
+            }, (err) => {
+                Log.warn('Unable to update identifier, error:', err);
+            });
     }
 
     // endregion
@@ -347,123 +386,120 @@ export default class PlayerMonitor extends EventEmitter {
         return round((parseFloat(time) / duration) * 100, 2);
     }
 
-    _getAsin(identifier) {
-        if(!isDefined(identifier)) {
-            return null;
-        }
+    _getPageAsin() {
+        let url = window.location.href;
 
-        // Find movie asin
-        if(identifier.type === 'movie') {
-            // Find play button
-            let button = document.querySelector('#dv-action-box .dv-play-btn a');
+        for(let i = 0; i < URL_PATTERNS.length; ++i) {
+            let pattern = URL_PATTERNS[i];
+            let match = pattern.exec(url);
 
-            if(!isDefined(button)) {
-                return null;
-            }
-
-            // Return asin attribute
-            return button.getAttribute('data-asin');
-        }
-
-        // Find matching episode element
-        let episodesElement = document.querySelector('#dv-episode-list .dv-episode-wrap');
-
-        if(!isDefined(episodesElement)) {
-            Log.error('Unable to find episodes element');
-            return null;
-        }
-
-        for(let i = 0; i < episodesElement.children.length; ++i) {
-            let episodeElement = episodesElement.children[i];
-
-            // Retrieve title element
-            let titleElement = episodeElement.querySelector('.dv-el-title');
-
-            if(!isDefined(titleElement)) {
+            if(match === null) {
+                Log.trace('%o didn\'t match pattern %o', url, pattern);
                 continue;
             }
 
-            // Match title string
-            let titleMatch = /(\d+)\. (.+)/g.exec(titleElement.innerText);
-
-            if(!isDefined(titleMatch)) {
-                continue;
+            if(match !== null) {
+                Log.trace('%o matched pattern %o: %o', url, pattern, match[1]);
+                return match[1];
             }
-
-            // Check if element matches requested episode
-            let episodeNumber = titleMatch[1];
-
-            if(episodeNumber !== identifier.episode.number) {
-                continue;
-            }
-
-            // Find play button
-            let button = episodeElement.querySelector('.dv-play-button-radial a');
-
-            if(!isDefined(button)) {
-                continue;
-            }
-
-            // Return asin attribute
-            return button.getAttribute('data-asin');
         }
 
-        Log.error('Unable to find episode (identifier: %o)', identifier);
+        Log.warn('%o didn\'t match any url patterns', url);
         return null;
     }
 
     _getIdentifier() {
-        // Retrieve title + subtitle from player
-        let contentTitlePanel = document.querySelector('#dv-web-player .contentTitlePanel');
+        // Try find content title panel
+        return this._getContentTitlePanel()
+            .then((contentTitlePanel) => new Promise((resolve, reject) => {
+                let attempts = 0;
 
-        if(!isDefined(contentTitlePanel)) {
-            Log.error('Unable to find the "#dv-web-player .contentTitlePanel" node');
-            return null;
-        }
+                let get = () => {
+                    let title = contentTitlePanel.querySelector('.title').innerHTML;
+                    let subtitle = contentTitlePanel.querySelector('.subtitle').innerHTML;
 
-        // Retrieve content parameters
-        let title = contentTitlePanel.querySelector('.title').innerHTML;
-        let subtitle = contentTitlePanel.querySelector('.subtitle').innerHTML;
+                    // Detect content
+                    let identifier = this._parseTitle(title, subtitle);
 
-        // Detect content
-        let identifier = this._parseTitle(title, subtitle);
+                    if (!isDefined(identifier)) {
+                        if(attempts < 50) {
+                            attempts += 1;
+                            setTimeout(get, 100);
+                            return;
+                        }
 
-        if(!isDefined(identifier)) {
-            Log.error('Unable to retrieve item identifier');
-            return null;
-        }
+                        reject(new Error('Unable to retrieve item identifier'));
+                        return;
+                    }
 
-        // Retrieve item asin
-        let key = this._getAsin(identifier);
+                    // Retrieve page key (movie, season or episode asin)
+                    let key = this._getPageAsin();
 
-        if(!isDefined(key)) {
-            Log.error('Unable to retrieve item asin');
-            return null;
-        }
+                    if (!isDefined(key)) {
+                        reject(new Error('Unable to retrieve page asin'));
+                        return;
+                    }
 
-        return {
-            key: key,
-            identifier: identifier
-        };
+                    // Found identifier
+                    resolve({
+                        key: key,
+                        identifier: identifier
+                    });
+                };
+
+                // Try retrieve identifier
+                get();
+            }));
+    }
+
+    _getContentTitlePanel() {
+        return new Promise((resolve, reject) => {
+            let attempts = 0;
+
+            let get = () => {
+                let contentTitlePanel = document.querySelector('#dv-web-player .contentTitlePanel');
+
+                if(!isDefined(contentTitlePanel)) {
+                    if(attempts < 50) {
+                        attempts += 1;
+                        setTimeout(get, 100);
+                        return;
+                    }
+
+                    reject(new Error('Unable to find content title panel'));
+                    return;
+                }
+
+                // Found element
+                resolve(contentTitlePanel);
+            };
+
+            // Try find content title panel
+            get();
+        });
     }
 
     _getPlayerDuration() {
-        if(this._video === null || this._video.duration === 0) {
+        if(this._metadata === null || this._metadata.duration === 0) {
             return null;
         }
 
-        return this._video.duration * 1000;
+        return this._metadata.duration * 1000;
     }
 
     _getPlayerTime() {
-        if(this._video === null || this._video.duration === 0) {
+        if(this._metadata === null || this._metadata.duration === 0) {
             return null;
         }
 
-        return this._video.currentTime * 1000;
+        return this._metadata.currentTime * 1000;
     }
 
     _parseTitle(title, subtitle) {
+        if(title.length === 0) {
+            return null;
+        }
+
         // Movie
         if(subtitle.length === 0) {
             return {
@@ -482,8 +518,8 @@ export default class PlayerMonitor extends EventEmitter {
                 type: 'episode',
                 episode: {
                     title: episodeMatch[3],
-                    season: episodeMatch[1],
-                    number: episodeMatch[2]
+                    season: parseInt(episodeMatch[1]),
+                    number: parseInt(episodeMatch[2])
                 },
                 show: {
                     title: title
@@ -497,32 +533,20 @@ export default class PlayerMonitor extends EventEmitter {
     }
 
     _updateIdentifier() {
-        // Retrieve current identifier
-        let details = this._getIdentifier();
+        return this._getIdentifier()
+            .then((result) => {
+                let {key, identifier} = result;
 
-        if(!isDefined(details)) {
-            return {
-                changed: null,
-                success: false
-            };
-        }
+                // Determine if content has changed
+                if(key === this._currentKey && isEqual(identifier, this._currentIdentifier)) {
+                    return false;
+                }
 
-        // Determine if content has changed
-        if(details.key === this._currentKey && details.identifier === this._currentIdentifier) {
-            return {
-                changed: false,
-                success: true
-            };
-        }
-
-        // Update state
-        this._currentKey = details.key;
-        this._currentIdentifier = details.identifier;
-
-        return {
-            changed: true,
-            success: true
-        };
+                // Update state
+                this._currentKey = key;
+                this._currentIdentifier = identifier;
+                return true;
+            });
     }
 
     // endregion
