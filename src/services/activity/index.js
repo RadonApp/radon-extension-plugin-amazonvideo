@@ -9,9 +9,9 @@ import ActivityService from 'eon.extension.framework/services/source/activity';
 import Api from '../../api';
 import Log from '../../core/logger';
 import Parser from './core/parser';
-import PlayerMonitor from './monitor/player';
 import Plugin from '../../core/plugin';
 import ShimApi from '../../core/shim';
+import PlayerMonitor from './monitor/player';
 
 const PROGRESS_EVENT_INTERVAL = 5000;  // (in milliseconds)
 
@@ -131,7 +131,7 @@ export class AmazonVideoActivityService extends ActivityService {
 
         // Check if current session matches
         if(isDefined(this._session) && isDefined(this._session.item) && this._session.item.id === key) {
-            // Session matches, trigger a "playing" event instead
+            console.debug('Session already exists, triggering a "playing" event instead');
             this._onPlaying();
             return;
         }
@@ -188,6 +188,10 @@ export class AmazonVideoActivityService extends ActivityService {
             return;
         }
 
+        if(this._session.state === SessionState.ended) {
+            return;
+        }
+
         // Update state
         this._session.state = SessionState.playing;
 
@@ -210,6 +214,10 @@ export class AmazonVideoActivityService extends ActivityService {
 
         if(this._session === null) {
             Log.debug('No active session, ignoring "progress" event');
+            return;
+        }
+
+        if(this._session.state === SessionState.ended) {
             return;
         }
 
@@ -418,6 +426,10 @@ export class AmazonVideoActivityService extends ActivityService {
         }
 
         if(this._session.state === SessionState.playing) {
+            return;
+        }
+
+        if(this._session.state === SessionState.ended) {
             return;
         }
 
