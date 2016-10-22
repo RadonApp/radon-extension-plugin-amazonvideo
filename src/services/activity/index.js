@@ -5,11 +5,11 @@ import Registry from 'eon.extension.framework/core/registry';
 import {isDefined} from 'eon.extension.framework/core/helpers';
 import {createScript} from 'eon.extension.framework/core/helpers/script';
 
-import Api from '../../api';
-import Log from '../../core/logger';
+import Api from 'eon.extension.source.amazonvideo/api';
+import Log from 'eon.extension.source.amazonvideo/core/logger';
+import Plugin from 'eon.extension.source.amazonvideo/core/plugin';
+import ShimApi from 'eon.extension.source.amazonvideo/core/shim';
 import Parser from './core/parser';
-import Plugin from '../../core/plugin';
-import ShimApi from '../../core/shim';
 import PlayerMonitor from './monitor';
 
 

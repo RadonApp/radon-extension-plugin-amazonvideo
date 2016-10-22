@@ -1,6 +1,6 @@
 import EventEmitter from 'eventemitter3';
 
-import Log from '../core/logger';
+import Log from 'eon.extension.source.amazonvideo/core/logger';
 
 
 class AmazonVideoShimApi extends EventEmitter {
