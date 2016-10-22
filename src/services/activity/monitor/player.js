@@ -1,7 +1,13 @@
 import {hasClass, hasClassTree, isDefined, round} from 'eon.extension.framework/core/helpers';
+import {
+    MovieIdentifier,
+    ShowIdentifier,
+    SeasonIdentifier,
+    EpisodeIdentifier,
+    KeyType
+} from 'eon.extension.framework/models/activity/identifier';
 
 import EventEmitter from 'eventemitter3';
-import isEqual from 'lodash-es/isEqual';
 import merge from 'lodash-es/merge';
 
 import Log from '../../../core/logger';
@@ -23,7 +29,6 @@ export default class PlayerMonitor extends EventEmitter {
         this._playerContent = null;
         this._metadata = null;
 
-        this._currentKey = null;
         this._currentIdentifier = null;
         this._visible = false;
     }
@@ -125,25 +130,22 @@ export default class PlayerMonitor extends EventEmitter {
     }
 
     _bindPlayerEvents() {
-        Log.debug('Binding to player events');
+        Log.trace('Binding to player events');
 
         // Bind player events
         this._addEventListener('loadstart', () => this._onVideoLoading());
         this._addEventListener('seeked', () => this._onVideoSeeked());
         this._addEventListener('playing', () => this._onPlaying());
         this._addEventListener('pause', () => this.emit('paused'));
-        this._addEventListener('ended', () => this.emit('ended'));
+        this._addEventListener('ended', () => this.emit('stopped'));
 
         this._addEventListener('timeupdate', () => {
-            let time = this._getPlayerTime();
-            let duration = this._getPlayerDuration();
-
-            this.emit('progress', this._calculateProgress(time, duration), time, duration);
+            this.emit('progress', this._getPlayerTime(), this._getPlayerDuration());
         });
     }
 
     _unbindPlayerEvents() {
-        Log.debug('Unbinding from player events');
+        Log.trace('Unbinding from player events');
 
         // Unbind player events
         if(this._metadata !== null) {
@@ -157,7 +159,7 @@ export default class PlayerMonitor extends EventEmitter {
         }
 
         // Add event listener
-        Log.debug('Adding event listener %o for type %o', listener, type);
+        Log.trace('Adding event listener %o for type %o', listener, type);
         this._metadata.addEventListener(type, listener);
 
         // Store listener reference
@@ -307,12 +309,8 @@ export default class PlayerMonitor extends EventEmitter {
             .then((changed) => {
                 // Emit "created" event (if the identifier has changed)
                 if(changed) {
-                    Log.trace(
-                        'Identifier changed, emitting "created" event (key: %o, identifier: %o)',
-                        this._currentKey, this._currentIdentifier
-                    );
-
-                    this.emit('created', this._currentKey, this._currentIdentifier);
+                    Log.trace('Identifier changed, emitting "created" event (identifier: %o)', this._currentIdentifier);
+                    this.emit('created', this._currentIdentifier);
                 }
 
                 return true;
@@ -333,8 +331,8 @@ export default class PlayerMonitor extends EventEmitter {
         return this._updateIdentifier()
             .then(() => {
                 // Emit events
-                this.emit('opened', this._currentKey, this._currentIdentifier);
-                this.emit('created', this._currentKey, this._currentIdentifier);
+                this.emit('opened', this._currentIdentifier);
+                this.emit('created', this._currentIdentifier);
                 return true;
             }, (err) => {
                 Log.warn('Unable to update identifier, error:', err);
@@ -343,7 +341,7 @@ export default class PlayerMonitor extends EventEmitter {
 
     _onVideoClosed() {
         // Emit "closed" event
-        this.emit('closed', this._currentKey, this._currentIdentifier);
+        this.emit('closed', this._currentIdentifier);
         return true;
     }
 
@@ -363,14 +361,10 @@ export default class PlayerMonitor extends EventEmitter {
             .then((changed) => {
                 // Emit event
                 if(changed) {
-                    Log.trace(
-                        'Identifier changed, emitting "created" event (key: %o, identifier: %o)',
-                        this._currentKey, this._currentIdentifier
-                    );
-
-                    this.emit('created', this._currentKey, this._currentIdentifier);
+                    Log.trace('Identifier changed, emitting "created" event (identifier: %o)', this._currentIdentifier);
+                    this.emit('created', this._currentIdentifier);
                 } else {
-                    this.emit('playing');
+                    this.emit('started');
                 }
 
                 return true;
@@ -416,11 +410,16 @@ export default class PlayerMonitor extends EventEmitter {
                 let attempts = 0;
 
                 let get = () => {
-                    let title = contentTitlePanel.querySelector('.title').innerHTML;
-                    let subtitle = contentTitlePanel.querySelector('.subtitle').innerHTML;
+                    // Retrieve page key (movie, season or episode asin)
+                    let key = this._getPageAsin();
+
+                    if(!isDefined(key)) {
+                        reject(new Error('Unable to retrieve page asin'));
+                        return;
+                    }
 
                     // Detect content
-                    let identifier = this._parseTitle(title, subtitle);
+                    let identifier = this._constructIdentifier(contentTitlePanel, key);
 
                     if(!isDefined(identifier)) {
                         if(attempts < 50) {
@@ -433,19 +432,8 @@ export default class PlayerMonitor extends EventEmitter {
                         return;
                     }
 
-                    // Retrieve page key (movie, season or episode asin)
-                    let key = this._getPageAsin();
-
-                    if(!isDefined(key)) {
-                        reject(new Error('Unable to retrieve page asin'));
-                        return;
-                    }
-
-                    // Found identifier
-                    resolve({
-                        key: key,
-                        identifier: identifier
-                    });
+                    // Return media identifier
+                    resolve(identifier);
                 };
 
                 // Try retrieve identifier
@@ -496,36 +484,48 @@ export default class PlayerMonitor extends EventEmitter {
         return this._metadata.currentTime * 1000;
     }
 
-    _parseTitle(title, subtitle) {
+    _constructIdentifier(node, key) {
+        // Retrieve elements
+        let title = node.querySelector('.title').innerHTML;
+        let subtitle = node.querySelector('.subtitle').innerHTML;
+
         if(title.length === 0) {
             return null;
         }
 
         // Movie
         if(subtitle.length === 0) {
-            return {
-                type: 'movie',
-                movie: {
-                    title: title
-                }
-            };
+            return new MovieIdentifier(
+                KeyType.Exact, key,
+                title
+            );
         }
 
         // Episode
         let episodeMatch = /^Season (\d+), Ep\. (\d+) (.+)$/g.exec(subtitle);
 
         if(episodeMatch !== null) {
-            return {
-                type: 'episode',
-                episode: {
-                    title: episodeMatch[3],
-                    season: parseInt(episodeMatch[1], 10),
-                    number: parseInt(episodeMatch[2], 10)
-                },
-                show: {
-                    title: title
-                }
-            };
+            return new EpisodeIdentifier(
+                KeyType.Relation, key,
+
+                // Show
+                new ShowIdentifier(
+                    KeyType.Missing, null,
+                    title
+                ),
+
+                // Season
+                new SeasonIdentifier(
+                    KeyType.Missing, null,
+                    parseInt(episodeMatch[1], 10)
+                ),
+
+                // Episode number
+                parseInt(episodeMatch[2], 10),
+
+                // Episode title
+                episodeMatch[3]
+            );
         }
 
         // Unknown item
@@ -535,16 +535,17 @@ export default class PlayerMonitor extends EventEmitter {
 
     _updateIdentifier() {
         return this._getIdentifier()
-            .then((result) => {
-                let {key, identifier} = result;
-
+            .then((identifier) => {
                 // Determine if content has changed
-                if(key === this._currentKey && isEqual(identifier, this._currentIdentifier)) {
+                if(identifier === this._currentIdentifier) {
+                    return false;
+                }
+
+                if(isDefined(identifier) && identifier.matches(this._currentIdentifier)) {
                     return false;
                 }
 
                 // Update state
-                this._currentKey = key;
                 this._currentIdentifier = identifier;
                 return true;
             });

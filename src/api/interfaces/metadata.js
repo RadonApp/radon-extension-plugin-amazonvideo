@@ -1,3 +1,4 @@
+import {MovieIdentifier, EpisodeIdentifier} from 'eon.extension.framework/models/activity/identifier';
 import {isDefined} from 'eon.extension.framework/core/helpers';
 
 import Interface from './base';
@@ -97,8 +98,8 @@ export default class MetadataInterface extends Interface {
         });
     }
 
-    resolve(id, identifier) {
-        return this.get(id).then((items) => {
+    resolve(identifier) {
+        return this.get(identifier.key).then((items) => {
             if(!isDefined(items) || items.length !== 1) {
                 return Promise.reject(new Error('Invalid response returned'));
             }
@@ -106,68 +107,53 @@ export default class MetadataInterface extends Interface {
             let item = items[0];
 
             // Movie
-            if(item.contentType === 'MOVIE') {
+            if(identifier instanceof MovieIdentifier && item.contentType === 'MOVIE') {
                 return item;
             }
 
-            // Season
-            if(item.contentType === 'SEASON') {
-                if(!isDefined(identifier) || !isDefined(identifier.episode)) {
-                    return Promise.reject(new Error('Episode identifier is required'));
+            // Episode identifier
+            if(identifier instanceof EpisodeIdentifier) {
+                // Process season metadata
+                if(item.contentType === 'SEASON') {
+                    let series = this._findAncestor(item, 'SERIES');
+
+                    // Find episode in `item.titleId`
+                    if(item.number === identifier.number) {
+                        return this.getSeasonEpisode(item.titleId, identifier.season.number, identifier.number);
+                    }
+
+                    // Find season in `series.titleId`
+                    return this.getShowSeason(series.titleId, identifier.season.number).then((season) =>
+                        // Find episode in `season.titleId`
+                        this.getSeasonEpisode(season.titleId, identifier.season.number, identifier.number)
+                    );
                 }
 
-                // Retrieve identifier parameters
-                let seasonNumber = identifier.episode.season;
-                let episodeNumber = identifier.episode.number;
+                // Process episode metadata
+                if(item.contentType === 'EPISODE') {
+                    let series = this._findAncestor(item, 'SERIES');
+                    let season = this._findAncestor(item, 'SEASON');
 
-                // Find ancestors
-                let series = this._findAncestor(item, 'SERIES');
+                    // Return `item` (if it matches the identifier)
+                    if(season.number === identifier.season.number && item.number === identifier.number) {
+                        return item;
+                    }
 
-                // Find episode in `item.titleId`
-                if(item.number === seasonNumber) {
-                    return this.getSeasonEpisode(item.titleId, seasonNumber, episodeNumber);
-                }
-
-                // Find season in `series.titleId`
-                return this.getShowSeason(series.titleId, seasonNumber).then((season) =>
                     // Find episode in `season.titleId`
-                    this.getSeasonEpisode(season.titleId, seasonNumber, episodeNumber)
-                );
-            }
+                    if(season.number === identifier.season.number) {
+                        return this.getSeasonEpisode(season.titleId, identifier.season.number, identifier.number);
+                    }
 
-            // Episode
-            if(item.contentType === 'EPISODE') {
-                if(!isDefined(identifier) || !isDefined(identifier.episode)) {
-                    return Promise.reject(new Error('Episode identifier is required'));
+                    // Find season in `series.titleId`
+                    return this.getShowSeason(series.titleId, identifier.season.number).then((season) =>
+                        // Find episode in `season.titleId`
+                        this.getSeasonEpisode(season.titleId, identifier.season.number, identifier.number)
+                    );
                 }
-
-                // Retrieve identifier parameters
-                let seasonNumber = identifier.episode.season;
-                let episodeNumber = identifier.episode.number;
-
-                // Find ancestors
-                let series = this._findAncestor(item, 'SERIES');
-                let season = this._findAncestor(item, 'SEASON');
-
-                // Return `item` (if it matches the identifier)
-                if(season.number === seasonNumber && item.number === episodeNumber) {
-                    return item;
-                }
-
-                // Find episode in `season.titleId`
-                if(season.number === seasonNumber) {
-                    return this.getSeasonEpisode(season.titleId, seasonNumber, episodeNumber);
-                }
-
-                // Find season in `series.titleId`
-                return this.getShowSeason(series.titleId, seasonNumber).then((season) =>
-                    // Find episode in `season.titleId`
-                    this.getSeasonEpisode(season.titleId, seasonNumber, episodeNumber)
-                );
             }
 
             return Promise.reject(new Error(
-                'Unknown item content type: "' + item.contentType + '"'
+                'Unsupported content type: "' + item.contentType + '"'
             ));
         });
     }
