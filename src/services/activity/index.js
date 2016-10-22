@@ -10,7 +10,7 @@ import Log from '../../core/logger';
 import Parser from './core/parser';
 import Plugin from '../../core/plugin';
 import ShimApi from '../../core/shim';
-import PlayerMonitor from './monitor/player';
+import PlayerMonitor from './monitor';
 
 
 export class AmazonVideoActivityService extends ActivityService {
@@ -54,7 +54,6 @@ export class AmazonVideoActivityService extends ActivityService {
 
         // Initialize player monitor
         this.monitor = new PlayerMonitor();
-        this.monitor.initialize();
 
         // Bind activity engine to monitor
         this.engine.bind(this.monitor);
