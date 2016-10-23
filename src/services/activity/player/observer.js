@@ -21,6 +21,7 @@ export default class PlayerObserver extends EventEmitter {
     }
 
     bind(document, options) {
+        // Set default options
         options = merge({
             interval: 500,
             timeout: 10 * 1000
@@ -30,7 +31,7 @@ export default class PlayerObserver extends EventEmitter {
         this._playerContentElement = null;
         this._videoElement = null;
 
-        // Create bind() promise
+        // Bind to page elements
         return new Promise((resolve, reject) => {
             let attempts = 0;
 

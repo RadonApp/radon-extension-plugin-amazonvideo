@@ -6,7 +6,7 @@ import {
     SeasonIdentifier,
     EpisodeIdentifier,
     KeyType
-} from 'eon.extension.framework/models/activity/identifier';
+} from 'eon.extension.framework/models/video';
 
 import EventEmitter from 'eventemitter3';
 

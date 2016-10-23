@@ -1,4 +1,4 @@
-import {MovieIdentifier, EpisodeIdentifier} from 'eon.extension.framework/models/activity/identifier';
+import {MovieIdentifier, EpisodeIdentifier} from 'eon.extension.framework/models/video';
 import {isDefined} from 'eon.extension.framework/core/helpers';
 
 import Interface from './base';

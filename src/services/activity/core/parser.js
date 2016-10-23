@@ -1,4 +1,4 @@
-import {Movie, Show, Season, Episode} from 'eon.extension.framework/models/metadata/video';
+import {Movie, Show, Season, Episode} from 'eon.extension.framework/models/video';
 
 import Log from 'eon.extension.source.amazonvideo/core/logger';
 import Plugin from 'eon.extension.source.amazonvideo/core/plugin';

@@ -10,7 +10,7 @@ import Log from 'eon.extension.source.amazonvideo/core/logger';
 import Plugin from 'eon.extension.source.amazonvideo/core/plugin';
 import ShimApi from 'eon.extension.source.amazonvideo/core/shim';
 import Parser from './core/parser';
-import PlayerMonitor from './monitor';
+import PlayerMonitor from './player/monitor';
 
 
 export class AmazonVideoActivityService extends ActivityService {
