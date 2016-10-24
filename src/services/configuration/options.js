@@ -5,7 +5,7 @@ import {
     SelectOption
 } from 'eon.extension.framework/services/configuration/models';
 
-import Plugin from '../../core/plugin';
+import Plugin from 'eon.extension.source.amazonvideo/core/plugin';
 
 
 export default [

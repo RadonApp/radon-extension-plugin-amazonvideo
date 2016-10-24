@@ -3,11 +3,11 @@ import {isDefined} from 'eon.extension.framework/core/helpers';
 import merge from 'lodash-es/merge';
 import URI from 'urijs';
 
-import ShimApi from '../core/shim';
+import ShimApi from 'eon.extension.source.amazonvideo/core/shim';
 import MetadataInterface from './interfaces/metadata';
 
-const BASE_URL = 'https://atv-ps.amazon.com';
 
+const BASE_URL = 'https://atv-ps.amazon.com';
 
 export class Api {
     constructor() {
