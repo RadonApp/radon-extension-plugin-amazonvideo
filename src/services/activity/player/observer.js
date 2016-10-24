@@ -1,3 +1,4 @@
+/* eslint-disable no-multi-spaces, key-spacing */
 import {hasClass, hasClassTree, isDefined} from 'eon.extension.framework/core/helpers';
 
 import EventEmitter from 'eventemitter3';
@@ -232,9 +233,9 @@ export default class PlayerObserver extends EventEmitter {
 
         // Bind player events
         this._addEventListener('loadstart', () => this.emit('loading'));
-        this._addEventListener('playing', () => this.emit('started'));
-        this._addEventListener('pause', () => this.emit('paused'));
-        this._addEventListener('ended', () => this.emit('stopped'));
+        this._addEventListener('playing',   () => this.emit('started'));
+        this._addEventListener('pause',     () => this.emit('paused'));
+        this._addEventListener('ended',     () => this.emit('stopped'));
 
         this._addEventListener('seeked', () => {
             this.emit('seeked', this._getPlayerTime(), this._getPlayerDuration());

@@ -29,7 +29,7 @@ export default class Parser {
 
             year = releaseDate.getFullYear();
         } catch(err) {
-            console.warn('Unable to parse release date: %o', movieInfo.releaseOrFirstAiringDate.valueDate);
+            Log.warn('Unable to parse release date: %o', movieInfo.releaseOrFirstAiringDate.valueDate);
         }
 
         // Construct movie

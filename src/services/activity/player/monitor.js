@@ -34,10 +34,10 @@ export default class PlayerMonitor extends EventEmitter {
         this._observer.on('changed',    this._onStarted.bind(this));
         this._observer.on('started',    this._onStarted.bind(this));
 
-        this._observer.on('paused',     this.emit.bind(this, 'paused'));
-        this._observer.on('stopped',    this.emit.bind(this, 'stopped'));
         this._observer.on('seeked',     this.emit.bind(this, 'seeked'));
         this._observer.on('progress',   this.emit.bind(this, 'progress'));
+        this._observer.on('paused',     this.emit.bind(this, 'paused'));
+        this._observer.on('stopped',    this.emit.bind(this, 'stopped'));
 
         // Private attributes
         this._currentIdentifier = null;
@@ -57,6 +57,24 @@ export default class PlayerMonitor extends EventEmitter {
 
     // region Event handlers
 
+    _onOpened() {
+        // Update current identifier
+        return this._updateIdentifier()
+            .then(() => {
+                // Emit events
+                this.emit('opened', this._currentIdentifier);
+                return true;
+            }, (err) => {
+                Log.warn('Unable to update identifier, error:', err);
+            });
+    }
+
+    _onClosed() {
+        // Emit "closed" event
+        this.emit('closed', this._currentIdentifier);
+        return true;
+    }
+
     _onLoading() {
         // Update current identifier
         return this._updateIdentifier()
@@ -71,25 +89,6 @@ export default class PlayerMonitor extends EventEmitter {
             }, (err) => {
                 Log.warn('Unable to update identifier, error:', err);
             });
-    }
-
-    _onOpened() {
-        // Update current identifier
-        return this._updateIdentifier()
-            .then(() => {
-                // Emit events
-                this.emit('opened', this._currentIdentifier);
-                this.emit('created', this._currentIdentifier);
-                return true;
-            }, (err) => {
-                Log.warn('Unable to update identifier, error:', err);
-            });
-    }
-
-    _onClosed() {
-        // Emit "closed" event
-        this.emit('closed', this._currentIdentifier);
-        return true;
     }
 
     _onStarted() {

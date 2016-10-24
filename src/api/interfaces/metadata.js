@@ -1,6 +1,7 @@
 import {MovieIdentifier, EpisodeIdentifier} from 'eon.extension.framework/models/video';
 import {isDefined} from 'eon.extension.framework/core/helpers';
 
+import Log from 'eon.extension.source.amazonvideo/core/logger';
 import Interface from './base';
 
 
@@ -46,11 +47,7 @@ export default class MetadataInterface extends Interface {
                 return season;
             }
 
-            console.warn(
-                'Unable to find season %d in %o',
-                seasonNumber,
-                seasons
-            );
+            Log.warn('Unable to find season %d in %o', seasonNumber, seasons);
             return null;
         });
     }
@@ -88,12 +85,7 @@ export default class MetadataInterface extends Interface {
                 return episode;
             }
 
-            console.warn(
-                'Unable to find episode %dx%d in %o',
-                seasonNumber,
-                episodeNumber,
-                episodes
-            );
+            Log.warn('Unable to find episode %dx%d in %o', seasonNumber, episodeNumber, episodes);
             return null;
         });
     }
