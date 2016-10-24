@@ -7,7 +7,7 @@ import ShimApi from 'eon.extension.source.amazonvideo/core/shim';
 import MetadataInterface from './interfaces/metadata';
 
 
-const BASE_URL = 'https://atv-ps.amazon.com';
+const BaseUrl = 'https://atv-ps.amazon.com';
 
 export class Api {
     constructor() {
@@ -27,7 +27,7 @@ export class Api {
                 options.query = merge({}, configuration, options.query || {});
 
                 // Build URL
-                let url = new URI(BASE_URL + path)
+                let url = new URI(BaseUrl + path)
                     .search(options.query)
                     .toString();
 

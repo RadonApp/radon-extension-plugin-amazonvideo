@@ -8,7 +8,7 @@ import {createScript} from 'eon.extension.framework/core/helpers/script';
 import Api from 'eon.extension.source.amazonvideo/api';
 import Log from 'eon.extension.source.amazonvideo/core/logger';
 import Plugin from 'eon.extension.source.amazonvideo/core/plugin';
-import ShimApi from 'eon.extension.source.amazonvideo/core/shim';
+import Shim from 'eon.extension.source.amazonvideo/core/shim';
 import Parser from './core/parser';
 import PlayerMonitor from './player/monitor';
 
@@ -71,10 +71,10 @@ export class AmazonVideoActivityService extends ActivityService {
             let script = createScript(document, Extension.getUrl('/source/amazonvideo/shim/shim.js'));
 
             // Bind shim api to page
-            ShimApi.bind(document);
+            Shim.bind(document);
 
             // Wait for "ready" event
-            ShimApi.once('ready', () => {
+            Shim.once('ready', () => {
                 resolve();
             });
 
