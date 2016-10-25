@@ -33,7 +33,8 @@ export class Api {
 
                 // Send request
                 return fetch(url, {
-                    method: method
+                    method: method,
+                    credentials: 'include'
                 });
             })
             .then((response) => {
