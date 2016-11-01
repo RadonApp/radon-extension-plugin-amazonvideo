@@ -5,6 +5,8 @@ import Registry from 'eon.extension.framework/core/registry';
 import {isDefined} from 'eon.extension.framework/core/helpers';
 import {createScript} from 'eon.extension.framework/core/helpers/script';
 
+import uuid from 'uuid';
+
 import Api from 'eon.extension.source.amazonvideo/api';
 import Log from 'eon.extension.source.amazonvideo/core/logger';
 import Plugin from 'eon.extension.source.amazonvideo/core/plugin';
@@ -26,7 +28,7 @@ export class AmazonVideoActivityService extends ActivityService {
         super.initialize();
 
         // Construct messaging bus
-        this.bus = new MessagingBus(Plugin.id + ':activity');
+        this.bus = new MessagingBus(Plugin.id + ':activity:' + uuid.v4());
         this.bus.connect('eon.extension.core:scrobble');
 
         // Construct activity engine

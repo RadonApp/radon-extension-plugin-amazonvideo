@@ -33,13 +33,11 @@ export default class Parser {
         }
 
         // Construct movie
-        return new Movie(
-            Plugin,
-            movieInfo.titleId,
-            movieInfo.title,
-            year,
-            movieInfo.runtime.valueMillis
-        );
+        return Movie.create(Plugin, movieInfo.titleId, {
+            title: movieInfo.title,
+            year: year,
+            duration: movieInfo.runtime.valueMillis
+        });
     }
 
     static parseEpisode(episodeInfo) {
@@ -47,34 +45,27 @@ export default class Parser {
         let seasonInfo = Parser._findAncestor(episodeInfo, 'SEASON');
 
         // Construct show
-        let show = new Show(
-            Plugin,
-            showInfo.titleId,
-            showInfo.title
-        );
+        let show = Show.create(Plugin, showInfo.titleId, {
+            title: showInfo.title
+        });
 
         // Construct season
-        let season = new Season(
-            Plugin,
-            seasonInfo.titleId,
-            seasonInfo.title,
-            null,
-            seasonInfo.number,
+        let season = Season.create(Plugin, seasonInfo.titleId, {
+            title: seasonInfo.title,
+            number: seasonInfo.number,
 
-            show
-        );
+            show: show
+        });
 
         // Construct episode
-        return new Episode(
-            Plugin,
-            episodeInfo.titleId,
-            episodeInfo.title,
-            episodeInfo.number,
-            episodeInfo.runtime.valueMillis,
+        return Episode.create(Plugin, episodeInfo.titleId, {
+            title: episodeInfo.title,
+            number: episodeInfo.number,
+            duration: episodeInfo.runtime.valueMillis,
 
-            show,
-            season
-        );
+            show: show,
+            season: season
+        });
     }
 
     // endregion
