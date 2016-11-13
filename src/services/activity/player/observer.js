@@ -110,7 +110,15 @@ export default class PlayerObserver extends EventEmitter {
         this._visible = visible;
     }
 
-    _onVideoAdded(node) {
+    _onVideoNodeAdded(node) {
+        if(node.src.indexOf('blob:https://www.amazon.com/') !== 0) {
+            Log.debug('Ignoring video with incorrect "src" attribute:', node);
+            return;
+        }
+
+        Log.debug('Found video element:', node);
+
+        // Video player found, bind to events
         this._videoElement = node;
 
         // Bind to video player events
@@ -172,7 +180,7 @@ export default class PlayerObserver extends EventEmitter {
         } else if(hasClass(node, 'rendererContainer')) {
             this._onNodeAdded(node.querySelector('video'));
         } else if(node.tagName === 'VIDEO') {
-            this._onVideoAdded(node);
+            this._onVideoNodeAdded(node);
         } else if(hasClassTree(node, 'title', 'contentTitlePanel')) {
             this.emit('changed');
         } else if(hasClassTree(node, 'subtitle', 'contentTitlePanel')) {
@@ -188,6 +196,7 @@ export default class PlayerObserver extends EventEmitter {
 
         // Observe node changes
         this._observe(node, {
+            attributes: true,
             childList: true
         });
 
@@ -197,6 +206,8 @@ export default class PlayerObserver extends EventEmitter {
     _onNodeAttributeChanged(attributeName, node) {
         if(node.id === 'dv-player-content' && attributeName === 'style') {
             this._onPlayerStyleChanged();
+        } else if(node.tagName === 'VIDEO' && attributeName === 'src') {
+            this._onVideoNodeAdded(node);
         } else {
             Log.warn('Unknown node attribute %o changed on %o', attributeName, node);
             return false;
