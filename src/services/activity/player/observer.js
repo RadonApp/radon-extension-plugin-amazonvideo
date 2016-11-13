@@ -17,6 +17,12 @@ export default class PlayerObserver extends EventEmitter {
         );
 
         // Private attributes
+        this._contentTitlePanel = null;
+        this._contentTitle = null;
+        this._contentSubtitle = null;
+
+        this._changedTimeout = null;
+
         this._listeners = {};
         this._visible = false;
     }
@@ -125,6 +131,68 @@ export default class PlayerObserver extends EventEmitter {
         this._addEventListeners();
     }
 
+    _onContentTitleChanged() {
+        // Retrieve current content title
+        let {title, subtitle} = this._getContentTitle();
+
+        // Ensure title has changed
+        if(this._contentTitle === title && this._contentSubtitle === subtitle) {
+            return;
+        }
+
+        // Update content title
+        this._contentTitle = title;
+        this._contentSubtitle = subtitle;
+
+        // Cancel existing "changed" event timeout
+        if(isDefined(this._changedTimeout)) {
+            clearTimeout(this._changedTimeout);
+
+            // Reset state
+            this._changedTimeout = null;
+        }
+
+        // Emit "changed" event in 2 seconds
+        this._changedTimeout = setTimeout(() => {
+            // Emit event
+            this.emit('changed', {
+                title: this._contentTitle,
+                subtitle: this._contentSubtitle
+            });
+
+            // Reset state
+            this._changedTimeout = null;
+        }, 2000);
+    }
+
+    _getContentTitle() {
+        // Retrieve content title
+        let title = this._contentTitlePanel.querySelector('.title');
+
+        if(!isDefined(title) || title.innerHTML.length === 0) {
+            return {
+                title: null,
+                subtitle: null
+            };
+        }
+
+        // Retrieve content subtitle
+        let subtitle = this._contentTitlePanel.querySelector('.subtitle');
+
+        if(!isDefined(subtitle) || subtitle.innerHTML.length === 0) {
+            return {
+                title: title.innerHTML,
+                subtitle: null
+            };
+        }
+
+        // Build content title object
+        return {
+            title: title.innerHTML,
+            subtitle: subtitle.innerHTML
+        };
+    }
+
     // region Mutations
 
     _onMutations(mutations) {
@@ -175,6 +243,8 @@ export default class PlayerObserver extends EventEmitter {
             this._onNodeAdded(node.querySelector('.contentTitlePanel'));
             this._onNodeAdded(node.querySelector('.rendererContainer'));
         } else if(hasClass(node, 'contentTitlePanel')) {
+            this._contentTitlePanel = node;
+
             this._onNodeAdded(node.querySelector('.title'));
             this._onNodeAdded(node.querySelector('.subtitle'));
         } else if(hasClass(node, 'rendererContainer')) {
@@ -182,13 +252,13 @@ export default class PlayerObserver extends EventEmitter {
         } else if(node.tagName === 'VIDEO') {
             this._onVideoNodeAdded(node);
         } else if(hasClassTree(node, 'title', 'contentTitlePanel')) {
-            this.emit('changed');
+            this._onContentTitleChanged();
         } else if(hasClassTree(node, 'subtitle', 'contentTitlePanel')) {
-            this.emit('changed');
+            this._onContentTitleChanged();
         } else if(hasClassTree(node, null, 'title', 'contentTitlePanel')) {
-            this.emit('changed');
+            this._onContentTitleChanged();
         } else if(hasClassTree(node, null, 'subtitle', 'contentTitlePanel')) {
-            this.emit('changed');
+            this._onContentTitleChanged();
         } else {
             Log.warn('Unknown node added: %o', node);
             return false;
