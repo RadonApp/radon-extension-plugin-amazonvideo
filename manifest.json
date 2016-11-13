@@ -1,6 +1,6 @@
 {
   "name": "Amazon Video",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "content_scripts": [
     {
       "id": "source.amazonvideo/main",
@@ -44,5 +44,9 @@
   },
   "web_accessible_resources": [
     "source/amazonvideo/shim/shim.js"
-  ]
+  ],
+  "release": {
+    "date": "2016-11-13",
+    "version": "0.3.4"
+  }
 }
