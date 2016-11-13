@@ -143,7 +143,25 @@ export default class PlayerMonitor extends EventEmitter {
             .then((contentTitlePanel) => new Promise((resolve, reject) => {
                 let attempts = 0;
 
+                let retry = (target) => {
+                    if(attempts < 50) {
+                        attempts += 1;
+                        setTimeout(target, 100);
+                        return;
+                    }
+
+                    reject(new Error('Unable to retrieve item identifier'));
+                };
+
                 let get = () => {
+                    // Ensure title element has been inserted
+                    let title = contentTitlePanel.querySelector('.title');
+
+                    if(!isDefined(title) || title.innerHTML.length === 0) {
+                        retry(get);
+                        return;
+                    }
+
                     // Retrieve page key (movie, season or episode asin)
                     let key = this._getPageAsin();
 
@@ -156,13 +174,7 @@ export default class PlayerMonitor extends EventEmitter {
                     let identifier = this._constructIdentifier(contentTitlePanel, key);
 
                     if(!isDefined(identifier)) {
-                        if(attempts < 50) {
-                            attempts += 1;
-                            setTimeout(get, 100);
-                            return;
-                        }
-
-                        reject(new Error('Unable to retrieve item identifier'));
+                        retry(get);
                         return;
                     }
 
