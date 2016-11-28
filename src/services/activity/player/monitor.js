@@ -59,13 +59,13 @@ export default class PlayerMonitor extends EventEmitter {
 
     _onOpened() {
         // Update current identifier
-        return this._updateIdentifier()
-            .then(() => {
-                // Emit events
-                this.emit('opened', this._currentIdentifier);
+        return this._getIdentifier()
+            .then((identifier) => {
+                // Emit "opened" event
+                this.emit('opened', identifier);
                 return true;
             }, (err) => {
-                Log.warn('Unable to update identifier, error:', err);
+                Log.warn('Unable to retrieve identifier, error:', err);
             });
     }
 
