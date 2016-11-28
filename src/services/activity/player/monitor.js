@@ -84,7 +84,7 @@ export default class PlayerMonitor extends EventEmitter {
                     Log.trace('Identifier changed, emitting "created" event (identifier: %o)', this._currentIdentifier);
                     this.emit('created', this._currentIdentifier);
                 } else {
-                    this.emit('loaded', this._currentIdentifier)
+                    this.emit('loaded', this._currentIdentifier);
                 }
 
                 return true;
