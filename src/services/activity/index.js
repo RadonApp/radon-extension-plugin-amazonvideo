@@ -33,7 +33,9 @@ export class AmazonVideoActivityService extends ActivityService {
 
         // Construct activity engine
         this.engine = new ActivityEngine(this.plugin, this.bus, {
+            getDuration: this._getDuration.bind(this),
             getMetadata: this._getMetadata.bind(this),
+
             isEnabled: this._isPlayerVisible.bind(this)
         });
 
@@ -85,6 +87,14 @@ export class AmazonVideoActivityService extends ActivityService {
             // Insert script into page
             (document.head || document.documentElement).appendChild(script);
         });
+    }
+
+    _getDuration() {
+        if(!isDefined(this.monitor)) {
+            return null;
+        }
+
+        return this.monitor.player.getDuration();
     }
 
     _getMetadata(identifier) {

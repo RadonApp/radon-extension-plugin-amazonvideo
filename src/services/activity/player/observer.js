@@ -93,6 +93,22 @@ export default class PlayerObserver extends EventEmitter {
         this._videoElement = null;
     }
 
+    getDuration() {
+        if(this._videoElement === null || this._videoElement.duration === 0) {
+            return null;
+        }
+
+        return this._videoElement.duration * 1000;
+    }
+
+    getTime() {
+        if(this._videoElement === null || this._videoElement.duration === 0) {
+            return null;
+        }
+
+        return this._videoElement.currentTime * 1000;
+    }
+
     // region Event handlers
 
     _onPlayerStyleChanged() {
@@ -319,11 +335,11 @@ export default class PlayerObserver extends EventEmitter {
         this._addEventListener('ended',     () => this.emit('stopped'));
 
         this._addEventListener('seeked', () => {
-            this.emit('seeked', this._getPlayerTime(), this._getPlayerDuration());
+            this.emit('seeked', this.getTime(), this.getDuration());
         });
 
         this._addEventListener('timeupdate', () => {
-            this.emit('progress', this._getPlayerTime(), this._getPlayerDuration());
+            this.emit('progress', this.getTime(), this.getDuration());
         });
     }
 
@@ -366,22 +382,6 @@ export default class PlayerObserver extends EventEmitter {
         }
 
         return true;
-    }
-
-    _getPlayerDuration() {
-        if(this._videoElement === null || this._videoElement.duration === 0) {
-            return null;
-        }
-
-        return this._videoElement.duration * 1000;
-    }
-
-    _getPlayerTime() {
-        if(this._videoElement === null || this._videoElement.duration === 0) {
-            return null;
-        }
-
-        return this._videoElement.currentTime * 1000;
     }
 
     // endregion

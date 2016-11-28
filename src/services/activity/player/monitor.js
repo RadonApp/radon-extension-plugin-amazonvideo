@@ -26,30 +26,30 @@ export default class PlayerMonitor extends EventEmitter {
         super();
 
         // Construct player observer
-        this._observer = new PlayerObserver();
-        this._observer.on('opened',     this._onOpened.bind(this));
-        this._observer.on('closed',     this._onClosed.bind(this));
-        this._observer.on('loading',    this._onLoading.bind(this));
+        this.player = new PlayerObserver();
+        this.player.on('opened',     this._onOpened.bind(this));
+        this.player.on('closed',     this._onClosed.bind(this));
+        this.player.on('loading',    this._onLoading.bind(this));
 
-        this._observer.on('changed',    this._onStarted.bind(this));
-        this._observer.on('started',    this._onStarted.bind(this));
+        this.player.on('changed',    this._onStarted.bind(this));
+        this.player.on('started',    this._onStarted.bind(this));
 
-        this._observer.on('seeked',     this.emit.bind(this, 'seeked'));
-        this._observer.on('progress',   this.emit.bind(this, 'progress'));
-        this._observer.on('paused',     this.emit.bind(this, 'paused'));
-        this._observer.on('stopped',    this.emit.bind(this, 'stopped'));
+        this.player.on('seeked',     this.emit.bind(this, 'seeked'));
+        this.player.on('progress',   this.emit.bind(this, 'progress'));
+        this.player.on('paused',     this.emit.bind(this, 'paused'));
+        this.player.on('stopped',    this.emit.bind(this, 'stopped'));
 
         // Private attributes
         this._currentIdentifier = null;
     }
 
     bind(document, options) {
-        return this._observer.bind(document, options);
+        return this.player.bind(document, options);
     }
 
     dispose() {
         // Dispose observer
-        this._observer.dispose();
+        this.player.dispose();
 
         // Emit player "closed" event
         this.emit('closed');
