@@ -108,9 +108,8 @@ export class AmazonVideoActivityService extends ActivityService {
             let metadata = Parser.parse(item);
 
             if(!isDefined(metadata)) {
-                return Promise.reject(new Error(
-                    'Unable to parse item'
-                ));
+                Log.info('Unable to parse item: %o', item);
+                return null;
             }
 
             Log.trace('Parsed item, metadata: %o', metadata);
