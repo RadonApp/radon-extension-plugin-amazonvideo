@@ -1,7 +1,18 @@
 {
   "presets": ["es2015", "react"],
   "plugins": [
-    "babel-plugin-add-module-exports",
-    "babel-plugin-transform-object-rest-spread"
+    "add-module-exports",
+    "transform-object-rest-spread",
+    ["@fuzeman/module-resolver", {
+      "root": [
+        "../eon.extension.browser.base/node_modules",
+        "../../Sources/eon.extension.source.amazonvideo/node_modules"
+      ],
+      "alias": {
+        "eon.extension.browser": "./src",
+        "eon.extension.framework": "../../eon.extension.framework/src",
+        "eon.extension.source.amazonvideo": "../../Sources/eon.extension.source.amazonvideo/src"
+      }
+    }]
   ]
 }
