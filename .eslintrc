@@ -27,10 +27,23 @@
   "parser": "babel-eslint",
 
   "plugins": [
+    "import",
     "react"
   ],
 
   "rules": {
+    "import/default": "error",
+    "import/export": "error",
+    "import/named": "error",
+    "import/namespace": "error",
+    "import/no-unresolved": "error",
+
+    "import/extensions": ["warn", { "js": "never" }],
+    "import/newline-after-import": ["warn", { "count": 2 }],
+    "import/no-duplicates": "warn",
+    "import/order": ["warn", { "groups": [["builtin", "external"], "internal", ["parent", "sibling"], "index"], "newlines-between": "always" }],
+    "import/unambiguous": "warn",
+
     "react/jsx-uses-react": "error",
     "react/jsx-uses-vars": "error",
 
@@ -196,5 +209,16 @@
     "wrap-iife": [2, "any"],
     "wrap-regex": 0,
     "yoda": [2, "never"]
+  },
+
+  "settings": {
+    "import/external-module-folders": [
+      "node_modules"
+    ],
+    "import/resolver": {
+      "@fuzeman/eslint-import-resolver-babel-module": {
+        "cwd": "process"
+      }
+    }
   }
 }
