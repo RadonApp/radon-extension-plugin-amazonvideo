@@ -1,16 +1,16 @@
 /* eslint-disable no-multi-spaces, key-spacing */
-import {isDefined} from 'eon.extension.framework/core/helpers';
+import {isDefined} from 'neon-extension-framework/core/helpers';
 import {
     MovieIdentifier,
     ShowIdentifier,
     SeasonIdentifier,
     EpisodeIdentifier,
     KeyType
-} from 'eon.extension.framework/models/video';
+} from 'neon-extension-framework/models/video';
 
 import EventEmitter from 'eventemitter3';
 
-import Log from 'eon.extension.source.amazonvideo/core/logger';
+import Log from 'neon-extension-source-amazonvideo/core/logger';
 import PlayerObserver from './observer';
 
 

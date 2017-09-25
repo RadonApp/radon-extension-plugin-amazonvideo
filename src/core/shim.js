@@ -1,6 +1,6 @@
 import EventEmitter from 'eventemitter3';
 
-import Log from 'eon.extension.source.amazonvideo/core/logger';
+import Log from 'neon-extension-source-amazonvideo/core/logger';
 
 
 class AmazonVideoShimApi extends EventEmitter {
@@ -16,7 +16,7 @@ class AmazonVideoShimApi extends EventEmitter {
         this.document = document;
 
         // Listen for shim events
-        this.document.body.addEventListener('eon.event', (e) => this._onEventReceived(e));
+        this.document.body.addEventListener('neon.event', (e) => this._onEventReceived(e));
     }
 
     request(type, data) {
@@ -24,7 +24,7 @@ class AmazonVideoShimApi extends EventEmitter {
             let requestId = this._nextRequestId++;
 
             // Construct request
-            let event = new CustomEvent('eon.request', {
+            let event = new CustomEvent('neon.request', {
                 detail: {
                     id: requestId,
                     type: type,

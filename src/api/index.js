@@ -1,9 +1,9 @@
-import {isDefined} from 'eon.extension.framework/core/helpers';
+import {isDefined} from 'neon-extension-framework/core/helpers';
 
 import merge from 'lodash-es/merge';
 import URI from 'urijs';
 
-import ShimApi from 'eon.extension.source.amazonvideo/core/shim';
+import ShimApi from 'neon-extension-source-amazonvideo/core/shim';
 import MetadataInterface from './interfaces/metadata';
 
 

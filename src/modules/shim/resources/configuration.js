@@ -1,4 +1,4 @@
-import {generateRandomString, isDefined} from 'eon.extension.framework/core/helpers';
+import {generateRandomString, isDefined} from 'neon-extension-framework/core/helpers';
 
 import fetchJsonp from 'fetch-jsonp';
 

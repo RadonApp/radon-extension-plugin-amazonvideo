@@ -5,13 +5,13 @@
     "transform-object-rest-spread",
     ["@fuzeman/module-resolver", {
       "root": [
-        "../eon.extension.browser.base/node_modules",
-        "../../Sources/eon.extension.source.amazonvideo/node_modules"
+        "../neon-extension-browser-base/node_modules",
+        "../../Sources/neon-extension-source-amazonvideo/node_modules"
       ],
       "alias": {
-        "eon.extension.browser": "./src",
-        "eon.extension.framework": "../../eon.extension.framework/src",
-        "eon.extension.source.amazonvideo": "../../Sources/eon.extension.source.amazonvideo/src"
+        "neon-extension-browser": "./src",
+        "neon-extension-framework": "../../neon-extension-framework/src",
+        "neon-extension-source-amazonvideo": "../../Sources/neon-extension-source-amazonvideo/src"
       }
     }]
   ]

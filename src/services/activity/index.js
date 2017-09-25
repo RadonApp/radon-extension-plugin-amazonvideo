@@ -1,16 +1,16 @@
-import Extension from 'eon.extension.browser/extension';
-import ActivityService, {ActivityEngine} from 'eon.extension.framework/services/source/activity';
-import MessagingBus from 'eon.extension.framework/messaging/bus';
-import Registry from 'eon.extension.framework/core/registry';
-import {isDefined} from 'eon.extension.framework/core/helpers';
-import {createScript} from 'eon.extension.framework/core/helpers/script';
+import Extension from 'neon-extension-browser/extension';
+import ActivityService, {ActivityEngine} from 'neon-extension-framework/services/source/activity';
+import MessagingBus from 'neon-extension-framework/messaging/bus';
+import Registry from 'neon-extension-framework/core/registry';
+import {isDefined} from 'neon-extension-framework/core/helpers';
+import {createScript} from 'neon-extension-framework/core/helpers/script';
 
 import uuid from 'uuid';
 
-import Api from 'eon.extension.source.amazonvideo/api';
-import Log from 'eon.extension.source.amazonvideo/core/logger';
-import Plugin from 'eon.extension.source.amazonvideo/core/plugin';
-import Shim from 'eon.extension.source.amazonvideo/core/shim';
+import Api from 'neon-extension-source-amazonvideo/api';
+import Log from 'neon-extension-source-amazonvideo/core/logger';
+import Plugin from 'neon-extension-source-amazonvideo/core/plugin';
+import Shim from 'neon-extension-source-amazonvideo/core/shim';
 import Parser from './core/parser';
 import PlayerMonitor from './player/monitor';
 
@@ -29,7 +29,7 @@ export class AmazonVideoActivityService extends ActivityService {
 
         // Construct messaging bus
         this.bus = new MessagingBus(Plugin.id + ':activity:' + uuid.v4());
-        this.bus.connect('eon.extension.core:scrobble');
+        this.bus.connect('neon-extension-core:scrobble');
 
         // Construct activity engine
         this.engine = new ActivityEngine(this.plugin, this.bus, {

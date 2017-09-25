@@ -1,4 +1,4 @@
-import SourcePlugin from 'eon.extension.framework/base/plugins/source';
+import SourcePlugin from 'neon-extension-framework/base/plugins/source';
 
 import Manifest from '../../manifest.json';
 

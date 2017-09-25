@@ -3,9 +3,9 @@ import {
     Page,
     EnableOption,
     SelectOption
-} from 'eon.extension.framework/services/configuration/models';
+} from 'neon-extension-framework/services/configuration/models';
 
-import Plugin from 'eon.extension.source.amazonvideo/core/plugin';
+import Plugin from 'neon-extension-source-amazonvideo/core/plugin';
 
 
 export default [

@@ -1,10 +1,10 @@
 /* eslint-disable no-multi-spaces, key-spacing */
-import {hasClass, hasClassTree, isDefined} from 'eon.extension.framework/core/helpers';
+import {hasClass, hasClassTree, isDefined} from 'neon-extension-framework/core/helpers';
 
 import EventEmitter from 'eventemitter3';
 import merge from 'lodash-es/merge';
 
-import Log from 'eon.extension.source.amazonvideo/core/logger';
+import Log from 'neon-extension-source-amazonvideo/core/logger';
 
 
 export default class PlayerObserver extends EventEmitter {

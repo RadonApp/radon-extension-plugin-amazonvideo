@@ -1,5 +1,5 @@
 {
-  "name": "eon.extension.source.amazonvideo",
+  "name": "neon-extension-source-amazonvideo",
   "version": "0.3.4",
   "main": "./src/index.js",
   "devDependencies": {

@@ -1,7 +1,7 @@
-import {MovieIdentifier, EpisodeIdentifier} from 'eon.extension.framework/models/video';
-import {isDefined} from 'eon.extension.framework/core/helpers';
+import {MovieIdentifier, EpisodeIdentifier} from 'neon-extension-framework/models/video';
+import {isDefined} from 'neon-extension-framework/core/helpers';
 
-import Log from 'eon.extension.source.amazonvideo/core/logger';
+import Log from 'neon-extension-source-amazonvideo/core/logger';
 import Interface from './base';
 
 

@@ -1,4 +1,4 @@
-import {isDefined} from 'eon.extension.framework/core/helpers';
+import {isDefined} from 'neon-extension-framework/core/helpers';
 
 import Resources from './resources';
 
@@ -6,7 +6,7 @@ import Resources from './resources';
 export class AmazonVideoShim {
     start() {
         // Listen for shim requests
-        document.body.addEventListener('eon.request', (e) => this._onRequestReceived(e));
+        document.body.addEventListener('neon.request', (e) => this._onRequestReceived(e));
 
         // Emit "ready" event
         this.emit('ready');
@@ -14,7 +14,7 @@ export class AmazonVideoShim {
 
     emit(type, data) {
         // Construct event
-        let event = new CustomEvent('eon.event', {
+        let event = new CustomEvent('neon.event', {
             detail: {
                 type: type,
                 data: data || null
