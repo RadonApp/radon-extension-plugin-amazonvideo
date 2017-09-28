@@ -214,11 +214,6 @@
   "settings": {
     "import/external-module-folders": [
       "node_modules"
-    ],
-    "import/resolver": {
-      "@fuzeman/eslint-import-resolver-babel-module": {
-        "cwd": "process"
-      }
-    }
+    ]
   }
 }
