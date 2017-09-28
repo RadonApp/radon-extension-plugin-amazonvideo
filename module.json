@@ -1,6 +1,6 @@
 {
-  "name": "Amazon Video",
-  "version": "0.3.4",
+  "title": "Amazon Video",
+
   "content_scripts": [
     {
       "id": "source.amazonvideo/main",
@@ -37,16 +37,21 @@
       ]
     }
   ],
-  "permissions": {
-    "origins": [
-      "*://atv-ps.amazon.com/cdp/catalog/*"
-    ]
-  },
+  "services": [
+    "configuration",
+
+    "source/activity",
+    "source/sync"
+  ],
+  "origins": [
+    "*://atv-ps.amazon.com/cdp/catalog/*"
+  ],
   "web_accessible_resources": [
     "source/amazonvideo/shim/shim.js"
   ],
-  "release": {
-    "date": "2016-11-13",
-    "version": "0.3.4"
+  "webpack": {
+    "chunks": [
+      "shim"
+    ]
   }
 }

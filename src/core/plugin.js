@@ -1,6 +1,6 @@
 import SourcePlugin from 'neon-extension-framework/base/plugins/source';
 
-import Manifest from '../../manifest.json';
+import Manifest from '../../module.json';
 
 
 export class AmazonVideoPlugin extends SourcePlugin {
