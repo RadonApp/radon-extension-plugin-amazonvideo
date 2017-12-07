@@ -1,4 +1,4 @@
-import {isDefined} from 'neon-extension-framework/core/helpers';
+import IsNil from 'lodash-es/isNil';
 
 import Resources from './resources';
 
@@ -50,7 +50,7 @@ export class AmazonVideoShim {
         let type = e.detail.type;
 
         // Process request
-        if(isDefined(Resources[type])) {
+        if(!IsNil(Resources[type])) {
             Resources[type].request(e.detail.data).then(
                 (data) => this.resolve(id, data),
                 (data) => this.reject(id, data)

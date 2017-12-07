@@ -1,5 +1,6 @@
 /* eslint-disable no-multi-spaces, key-spacing */
-import {isDefined} from 'neon-extension-framework/core/helpers';
+import IsNil from 'lodash-es/isNil';
+
 import {
     MovieIdentifier,
     ShowIdentifier,
@@ -159,7 +160,7 @@ export default class PlayerMonitor extends EventEmitter {
                     // Ensure title element has been inserted
                     let title = contentTitlePanel.querySelector('.title');
 
-                    if(!isDefined(title) || title.innerHTML.length === 0) {
+                    if(IsNil(title) || title.innerHTML.length === 0) {
                         retry(get);
                         return;
                     }
@@ -167,7 +168,7 @@ export default class PlayerMonitor extends EventEmitter {
                     // Retrieve page key (movie, season or episode asin)
                     let key = this._getPageAsin();
 
-                    if(!isDefined(key)) {
+                    if(IsNil(key)) {
                         reject(new Error('Unable to retrieve page asin'));
                         return;
                     }
@@ -175,7 +176,7 @@ export default class PlayerMonitor extends EventEmitter {
                     // Detect content
                     let identifier = this._constructIdentifier(contentTitlePanel, key);
 
-                    if(!isDefined(identifier)) {
+                    if(IsNil(identifier)) {
                         retry(get);
                         return;
                     }
@@ -196,7 +197,7 @@ export default class PlayerMonitor extends EventEmitter {
             let get = () => {
                 let contentTitlePanel = document.querySelector('#dv-web-player .contentTitlePanel');
 
-                if(!isDefined(contentTitlePanel)) {
+                if(IsNil(contentTitlePanel)) {
                     if(attempts < 50) {
                         attempts += 1;
                         setTimeout(get, 100);
@@ -273,7 +274,7 @@ export default class PlayerMonitor extends EventEmitter {
                     return false;
                 }
 
-                if(isDefined(identifier) && identifier.matches(this._currentIdentifier)) {
+                if(!IsNil(identifier) && identifier.matches(this._currentIdentifier)) {
                     return false;
                 }
 

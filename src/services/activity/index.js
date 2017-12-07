@@ -1,11 +1,11 @@
+import IsNil from 'lodash-es/isNil';
+import Uuid from 'uuid';
+
 import Extension from 'neon-extension-browser/extension';
 import ActivityService, {ActivityEngine} from 'neon-extension-framework/services/source/activity';
 import MessagingBus from 'neon-extension-framework/messaging/bus';
 import Registry from 'neon-extension-framework/core/registry';
-import {isDefined} from 'neon-extension-framework/core/helpers';
 import {createScript} from 'neon-extension-framework/core/helpers/script';
-
-import uuid from 'uuid';
 
 import Api from 'neon-extension-source-amazonvideo/api';
 import Log from 'neon-extension-source-amazonvideo/core/logger';
@@ -28,7 +28,7 @@ export class AmazonVideoActivityService extends ActivityService {
         super.initialize();
 
         // Construct messaging bus
-        this.bus = new MessagingBus(Plugin.id + ':activity:' + uuid.v4());
+        this.bus = new MessagingBus(Plugin.id + ':activity:' + Uuid.v4());
         this.bus.connect('neon-extension-core:scrobble');
 
         // Construct activity engine
@@ -90,7 +90,7 @@ export class AmazonVideoActivityService extends ActivityService {
     }
 
     _getDuration() {
-        if(!isDefined(this.monitor)) {
+        if(IsNil(this.monitor)) {
             return null;
         }
 
@@ -107,7 +107,7 @@ export class AmazonVideoActivityService extends ActivityService {
             // Parse item into metadata models
             let metadata = Parser.parse(item);
 
-            if(!isDefined(metadata)) {
+            if(IsNil(metadata)) {
                 Log.info('Unable to parse item: %o', item);
                 return null;
             }
@@ -120,7 +120,7 @@ export class AmazonVideoActivityService extends ActivityService {
     _isPlayerVisible() {
         let playerContent = document.querySelector('#dv-player-content');
 
-        if(!isDefined(playerContent)) {
+        if(IsNil(playerContent)) {
             return false;
         }
 

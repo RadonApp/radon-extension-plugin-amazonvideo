@@ -1,8 +1,9 @@
 /* eslint-disable no-multi-spaces, key-spacing */
-import {hasClass, hasClassTree, isDefined} from 'neon-extension-framework/core/helpers';
-
 import EventEmitter from 'eventemitter3';
-import merge from 'lodash-es/merge';
+import IsNil from 'lodash-es/isNil';
+import Merge from 'lodash-es/merge';
+
+import {hasClass, hasClassTree} from 'neon-extension-framework/core/helpers';
 
 import Log from 'neon-extension-source-amazonvideo/core/logger';
 
@@ -29,7 +30,7 @@ export default class PlayerObserver extends EventEmitter {
 
     bind(document, options) {
         // Set default options
-        options = merge({
+        options = Merge({
             interval: 500,
             timeout: 10 * 1000
         }, options || {});
@@ -161,7 +162,7 @@ export default class PlayerObserver extends EventEmitter {
         this._contentSubtitle = subtitle;
 
         // Cancel existing "changed" event timeout
-        if(isDefined(this._changedTimeout)) {
+        if(!IsNil(this._changedTimeout)) {
             clearTimeout(this._changedTimeout);
 
             // Reset state
@@ -185,7 +186,7 @@ export default class PlayerObserver extends EventEmitter {
         // Retrieve content title
         let title = this._contentTitlePanel.querySelector('.title');
 
-        if(!isDefined(title) || title.innerHTML.length === 0) {
+        if(IsNil(title) || title.innerHTML.length === 0) {
             return {
                 title: null,
                 subtitle: null
@@ -195,7 +196,7 @@ export default class PlayerObserver extends EventEmitter {
         // Retrieve content subtitle
         let subtitle = this._contentTitlePanel.querySelector('.subtitle');
 
-        if(!isDefined(subtitle) || subtitle.innerHTML.length === 0) {
+        if(IsNil(subtitle) || subtitle.innerHTML.length === 0) {
             return {
                 title: title.innerHTML,
                 subtitle: null
@@ -244,7 +245,7 @@ export default class PlayerObserver extends EventEmitter {
     }
 
     _onNodeAdded(node) {
-        if(!isDefined(node)) {
+        if(IsNil(node)) {
             return false;
         }
 
@@ -309,7 +310,7 @@ export default class PlayerObserver extends EventEmitter {
     // region Private methods
 
     _observe(node, options) {
-        if(!isDefined(node)) {
+        if(IsNil(node)) {
             Log.warn('Invalid node: %o', node);
             return false;
         }
@@ -364,7 +365,7 @@ export default class PlayerObserver extends EventEmitter {
     }
 
     _removeAllEventListeners() {
-        if(!isDefined(this._videoElement)) {
+        if(IsNil(this._videoElement)) {
             return false;
         }
 

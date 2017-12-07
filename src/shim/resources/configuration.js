@@ -1,6 +1,7 @@
-import {generateRandomString, isDefined} from 'neon-extension-framework/core/helpers';
+import FetchJsonp from 'fetch-jsonp';
+import IsNil from 'lodash-es/isNil';
 
-import fetchJsonp from 'fetch-jsonp';
+import {generateRandomString} from 'neon-extension-framework/core/helpers';
 
 
 export default class ConfigurationResource {
@@ -10,7 +11,7 @@ export default class ConfigurationResource {
             // Retrieve player configuration
             let playerConfig = this._getPlayerConfiguration();
 
-            if(!isDefined(playerConfig)) {
+            if(IsNil(playerConfig)) {
                 return Promise.reject(new Error(
                     'Unable to retrieve player configuration'
                 ));
@@ -19,7 +20,7 @@ export default class ConfigurationResource {
             // Retrieve device identifier
             let deviceId = localStorage['atvwebplayer_deviceid'];
 
-            if(!isDefined(deviceId)) {
+            if(IsNil(deviceId)) {
                 return Promise.reject(new Error(
                     'Unable to retrieve device identifier'
                 ));
@@ -39,7 +40,7 @@ export default class ConfigurationResource {
     }
 
     static _getToken() {
-        return fetchJsonp('https://www.amazon.com/gp/video/streaming/player-token.json', {
+        return FetchJsonp('https://www.amazon.com/gp/video/streaming/player-token.json', {
             jsonpCallbackFunction: 'onWebToken_' + generateRandomString(32, '0123456789abcdefghijklmnopqrstuvwxyz')
         }).then((response) => {
             if(!response.ok) {
@@ -49,7 +50,7 @@ export default class ConfigurationResource {
             }
 
             return response.json().then((data) => {
-                if(!isDefined(data.token)) {
+                if(IsNil(data.token)) {
                     return Promise.reject(new Error(
                         'Unable to request player token'
                     ));
@@ -64,14 +65,14 @@ export default class ConfigurationResource {
         // Retrieve player node
         let player = document.querySelector('#dv-web-player');
 
-        if(!isDefined(player)) {
+        if(IsNil(player)) {
             return null;
         }
 
         // Retrieve configuration attribute
         let value = player.attributes['data-config'].value;
 
-        if(!isDefined(value)) {
+        if(IsNil(value)) {
             return null;
         }
 

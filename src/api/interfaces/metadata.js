@@ -1,5 +1,6 @@
+import IsNil from 'lodash-es/isNil';
+
 import {MovieIdentifier, EpisodeIdentifier} from 'neon-extension-framework/models/video';
-import {isDefined} from 'neon-extension-framework/core/helpers';
 
 import Log from 'neon-extension-source-amazonvideo/core/logger';
 import Interface from './base';
@@ -92,7 +93,7 @@ export default class MetadataInterface extends Interface {
 
     resolve(identifier) {
         return this.get(identifier.key).then((items) => {
-            if(!isDefined(items) || items.length !== 1) {
+            if(IsNil(items) || items.length !== 1) {
                 return Promise.reject(new Error('Invalid response returned'));
             }
 

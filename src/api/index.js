@@ -1,6 +1,5 @@
-import {isDefined} from 'neon-extension-framework/core/helpers';
-
-import merge from 'lodash-es/merge';
+import IsNil from 'lodash-es/isNil';
+import Merge from 'lodash-es/merge';
 import URI from 'urijs';
 
 import ShimApi from 'neon-extension-source-amazonvideo/core/shim';
@@ -16,7 +15,7 @@ export class Api {
     }
 
     request(method, path, options) {
-        options = merge({
+        options = Merge({
             query: {}
         }, options || {});
 
@@ -24,7 +23,7 @@ export class Api {
         return this._getConfiguration()
             .then((configuration) => {
                 // Add configuration parameters
-                options.query = merge({}, configuration, options.query || {});
+                options.query = Merge({}, configuration, options.query || {});
 
                 // Build URL
                 let url = new URI(BaseUrl + path)
@@ -67,7 +66,7 @@ export class Api {
     // region Private methods
 
     _getConfiguration() {
-        if(isDefined(this._configuration)) {
+        if(!IsNil(this._configuration)) {
             return Promise.resolve(this._configuration);
         }
 
