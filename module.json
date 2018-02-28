@@ -40,8 +40,7 @@
   "services": [
     "configuration",
 
-    "source/activity",
-    "source/sync"
+    "source/activity"
   ],
   "origins": [
     "*://atv-ps.amazon.com/cdp/catalog/*"
