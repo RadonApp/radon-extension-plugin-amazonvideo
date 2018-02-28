@@ -1,17 +1,11 @@
 /* eslint-disable no-multi-spaces, key-spacing */
+import EventEmitter from 'eventemitter3';
 import IsNil from 'lodash-es/isNil';
 
-import {
-    MovieIdentifier,
-    ShowIdentifier,
-    SeasonIdentifier,
-    EpisodeIdentifier,
-    KeyType
-} from 'neon-extension-framework/models/video';
+import {Movie, Show, Season, Episode} from 'neon-extension-framework/models/item/video';
 
-import EventEmitter from 'eventemitter3';
-
-import Log from 'neon-extension-source-amazonvideo/core/logger';
+import Log from '../../../core/logger';
+import Plugin from '../../../core/plugin';
 import PlayerObserver from './observer';
 
 
@@ -41,7 +35,7 @@ export default class PlayerMonitor extends EventEmitter {
         this.player.on('stopped',    this.emit.bind(this, 'stopped'));
 
         // Private attributes
-        this._currentIdentifier = null;
+        this._currentItem = null;
     }
 
     bind(document, options) {
@@ -60,58 +54,55 @@ export default class PlayerMonitor extends EventEmitter {
 
     _onOpened() {
         // Update current identifier
-        return this._getIdentifier()
-            .then((identifier) => {
-                // Emit "opened" event
-                this.emit('opened', identifier);
-                return true;
-            }, (err) => {
-                Log.warn('Unable to retrieve identifier, error:', err);
-            });
+        return this._getItem().then((item) => {
+            // Emit "opened" event
+            this.emit('opened', item);
+            return true;
+        }, (err) => {
+            Log.warn('Unable to retrieve identifier, error:', err);
+        });
     }
 
     _onClosed() {
         // Emit "closed" event
-        this.emit('closed', this._currentIdentifier);
+        this.emit('closed', this._currentItem);
         return true;
     }
 
     _onLoaded() {
         // Update current identifier
-        return this._updateIdentifier()
-            .then((changed) => {
-                // Emit "created" event (if the identifier has changed)
-                if(changed) {
-                    Log.trace('Identifier changed, emitting "created" event (identifier: %o)', this._currentIdentifier);
-                    this.emit('created', this._currentIdentifier);
-                } else {
-                    this.emit('loaded', this._currentIdentifier);
-                }
+        return this._updateItem().then((changed) => {
+            // Emit "created" event (if the identifier has changed)
+            if(changed) {
+                Log.trace('Identifier changed, emitting "created" event (identifier: %o)', this._currentItem);
+                this.emit('created', this._currentItem);
+            } else {
+                this.emit('loaded', this._currentItem);
+            }
 
-                return true;
-            }, (err) => {
-                Log.warn('Unable to update identifier, error:', err);
-            });
+            return true;
+        }, (err) => {
+            Log.warn('Unable to update identifier, error:', err);
+        });
     }
 
     _onStarted() {
         Log.trace('Started');
 
         // Update current identifier
-        return this._updateIdentifier()
-            .then((changed) => {
-                // Emit event
-                if(changed) {
-                    Log.trace('Identifier changed, emitting "created" event (identifier: %o)', this._currentIdentifier);
-                    this.emit('created', this._currentIdentifier);
-                } else {
-                    this.emit('started');
-                }
+        return this._updateItem().then((changed) => {
+            // Emit event
+            if(changed) {
+                Log.trace('Identifier changed, emitting "created" event (identifier: %o)', this._currentItem);
+                this.emit('created', this._currentItem);
+            } else {
+                this.emit('started');
+            }
 
-                return true;
-            }, (err) => {
-                Log.warn('Unable to update identifier, error:', err);
-            });
+            return true;
+        }, (err) => {
+            Log.warn('Unable to update identifier, error:', err);
+        });
     }
 
     // endregion
@@ -140,54 +131,53 @@ export default class PlayerMonitor extends EventEmitter {
         return null;
     }
 
-    _getIdentifier() {
+    _getItem() {
         // Try find content title panel
-        return this._findContentTitlePanel()
-            .then((contentTitlePanel) => new Promise((resolve, reject) => {
-                let attempts = 0;
+        return this._findContentTitlePanel().then((contentTitlePanel) => new Promise((resolve, reject) => {
+            let attempts = 0;
 
-                let retry = (target) => {
-                    if(attempts < 50) {
-                        attempts += 1;
-                        setTimeout(target, 100);
-                        return;
-                    }
+            let retry = (target) => {
+                if(attempts < 50) {
+                    attempts += 1;
+                    setTimeout(target, 100);
+                    return;
+                }
 
-                    reject(new Error('Unable to retrieve item identifier'));
-                };
+                reject(new Error('Unable to retrieve item identifier'));
+            };
 
-                let get = () => {
-                    // Ensure title element has been inserted
-                    let title = contentTitlePanel.querySelector('.title');
+            let get = () => {
+                // Ensure title element has been inserted
+                let title = contentTitlePanel.querySelector('.title');
 
-                    if(IsNil(title) || title.innerHTML.length === 0) {
-                        retry(get);
-                        return;
-                    }
+                if(IsNil(title) || title.innerHTML.length === 0) {
+                    retry(get);
+                    return;
+                }
 
-                    // Retrieve page key (movie, season or episode asin)
-                    let key = this._getPageAsin();
+                // Retrieve page key (movie, season or episode asin)
+                let key = this._getPageAsin();
 
-                    if(IsNil(key)) {
-                        reject(new Error('Unable to retrieve page asin'));
-                        return;
-                    }
+                if(IsNil(key)) {
+                    reject(new Error('Unable to retrieve page asin'));
+                    return;
+                }
 
-                    // Detect content
-                    let identifier = this._constructIdentifier(contentTitlePanel, key);
+                // Detect content
+                let identifier = this._createItem(contentTitlePanel, key);
 
-                    if(IsNil(identifier)) {
-                        retry(get);
-                        return;
-                    }
+                if(IsNil(identifier)) {
+                    retry(get);
+                    return;
+                }
 
-                    // Return media identifier
-                    resolve(identifier);
-                };
+                // Return media identifier
+                resolve(identifier);
+            };
 
-                // Try retrieve identifier
-                get();
-            }));
+            // Try retrieve identifier
+            get();
+        }));
     }
 
     _findContentTitlePanel() {
@@ -217,7 +207,7 @@ export default class PlayerMonitor extends EventEmitter {
         });
     }
 
-    _constructIdentifier(node, key) {
+    _createItem(node, key) {
         // Retrieve elements
         let title = node.querySelector('.title').innerHTML;
         let subtitle = node.querySelector('.subtitle').innerHTML;
@@ -228,37 +218,39 @@ export default class PlayerMonitor extends EventEmitter {
 
         // Movie
         if(subtitle.length === 0) {
-            return new MovieIdentifier(
-                KeyType.Exact, key,
+            return Movie.create(Plugin.id, {
+                keys: this._createKeys({
+                    key
+                }),
+
+                // Metadata
                 title
-            );
+            });
         }
 
         // Episode
         let episodeMatch = /^Season (\d+), Ep\. (\d+) (.+)$/g.exec(subtitle);
 
         if(episodeMatch !== null) {
-            return new EpisodeIdentifier(
-                KeyType.Relation, key,
+            return Episode.create(Plugin.id, {
+                keys: this._createKeys({
+                    key
+                }),
+
+                // Metadata
+                title: episodeMatch[3],
+                number: parseInt(episodeMatch[2], 10),
 
                 // Show
-                new ShowIdentifier(
-                    KeyType.Missing, null,
+                show: Show.create(Plugin.id, {
                     title
-                ),
+                }),
 
                 // Season
-                new SeasonIdentifier(
-                    KeyType.Missing, null,
-                    parseInt(episodeMatch[1], 10)
-                ),
-
-                // Episode number
-                parseInt(episodeMatch[2], 10),
-
-                // Episode title
-                episodeMatch[3]
-            );
+                season: Season.create(Plugin.id, {
+                    number: parseInt(episodeMatch[1], 10)
+                })
+            });
         }
 
         // Unknown item
@@ -266,22 +258,26 @@ export default class PlayerMonitor extends EventEmitter {
         return null;
     }
 
-    _updateIdentifier() {
-        return this._getIdentifier()
-            .then((identifier) => {
-                // Determine if content has changed
-                if(identifier === this._currentIdentifier) {
-                    return false;
-                }
+    _createKeys(keys) {
+        // TODO Add keys with country suffixes
+        return keys;
+    }
 
-                if(!IsNil(identifier) && identifier.matches(this._currentIdentifier)) {
-                    return false;
-                }
+    _updateItem() {
+        return this._getItem().then((item) => {
+            // Determine if content has changed
+            if(item === this._currentItem) {
+                return false;
+            }
 
-                // Update state
-                this._currentIdentifier = identifier;
-                return true;
-            });
+            if(!IsNil(item) && item.matches(this._currentItem)) {
+                return false;
+            }
+
+            // Update state
+            this._currentItem = item;
+            return true;
+        });
     }
 
     // endregion

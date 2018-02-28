@@ -1,7 +1,7 @@
-import {Movie, Show, Season, Episode} from 'neon-extension-framework/models/video';
+import {Movie, Show, Season, Episode} from 'neon-extension-framework/models/item/video';
 
-import Log from 'neon-extension-source-amazonvideo/core/logger';
-import Plugin from 'neon-extension-source-amazonvideo/core/plugin';
+import Log from '../../../core/logger';
+import Plugin from '../../../core/plugin';
 
 
 export default class Parser {
@@ -33,7 +33,12 @@ export default class Parser {
         }
 
         // Construct movie
-        return Movie.create(Plugin, movieInfo.titleId, {
+        return Movie.create(Plugin.id, {
+            keys: Parser._createKeys({
+                id: movieInfo.titleId
+            }),
+
+            // Metadata
             title: movieInfo.title,
             year: year,
             duration: movieInfo.runtime.valueMillis
@@ -45,32 +50,55 @@ export default class Parser {
         let seasonInfo = Parser._findAncestor(episodeInfo, 'SEASON');
 
         // Construct show
-        let show = Show.create(Plugin, showInfo.titleId, {
+        let show = Show.create(Plugin.id, {
+            keys: Parser._createKeys({
+                id: showInfo.titleId
+            }),
+
+            // Metadata
             title: showInfo.title
+            // TODO year?
         });
 
         // Construct season
-        let season = Season.create(Plugin, seasonInfo.titleId, {
+        let season = Season.create(Plugin.id, {
+            keys: Parser._createKeys({
+                id: seasonInfo.titleId
+            }),
+
+            // Metadata
             title: seasonInfo.title,
             number: seasonInfo.number,
 
-            show: show
+            // Children
+            show
         });
 
         // Construct episode
-        return Episode.create(Plugin, episodeInfo.titleId, {
+        return Episode.create(Plugin.id, {
+            keys: Parser._createKeys({
+                id: episodeInfo.titleId
+            }),
+
+            // Metadata
             title: episodeInfo.title,
             number: episodeInfo.number,
             duration: episodeInfo.runtime.valueMillis,
 
-            show: show,
-            season: season
+            // Children
+            show,
+            season
         });
     }
 
     // endregion
 
-    // region Private methods
+    // region Private Methods
+
+    static _createKeys(keys) {
+        // TODO Add `keys` with country suffixes
+        return keys;
+    }
 
     static _findAncestor(item, contentType) {
         for(let i = 0; i < item.ancestorTitles.length; ++i) {

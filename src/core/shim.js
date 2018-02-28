@@ -1,6 +1,6 @@
 import EventEmitter from 'eventemitter3';
 
-import Log from 'neon-extension-source-amazonvideo/core/logger';
+import Log from './logger';
 
 
 class AmazonVideoShimApi extends EventEmitter {

@@ -1,8 +1,4 @@
-import IsNil from 'lodash-es/isNil';
-
-import {MovieIdentifier, EpisodeIdentifier} from 'neon-extension-framework/models/video';
-
-import Log from 'neon-extension-source-amazonvideo/core/logger';
+import Log from '../../core/logger';
 import Interface from './base';
 
 
@@ -88,66 +84,6 @@ export default class MetadataInterface extends Interface {
 
             Log.warn('Unable to find episode %dx%d in %o', seasonNumber, episodeNumber, episodes);
             return null;
-        });
-    }
-
-    resolve(identifier) {
-        return this.get(identifier.key).then((items) => {
-            if(IsNil(items) || items.length !== 1) {
-                return Promise.reject(new Error('Invalid response returned'));
-            }
-
-            let item = items[0];
-
-            // Movie
-            if(identifier instanceof MovieIdentifier && item.contentType === 'MOVIE') {
-                return item;
-            }
-
-            // Episode identifier
-            if(identifier instanceof EpisodeIdentifier) {
-                // Process season metadata
-                if(item.contentType === 'SEASON') {
-                    let series = this._findAncestor(item, 'SERIES');
-
-                    // Find episode in `item.titleId`
-                    if(item.number === identifier.number) {
-                        return this.getSeasonEpisode(item.titleId, identifier.season.number, identifier.number);
-                    }
-
-                    // Find season in `series.titleId`
-                    return this.getShowSeason(series.titleId, identifier.season.number).then((season) =>
-                        // Find episode in `season.titleId`
-                        this.getSeasonEpisode(season.titleId, identifier.season.number, identifier.number)
-                    );
-                }
-
-                // Process episode metadata
-                if(item.contentType === 'EPISODE') {
-                    let series = this._findAncestor(item, 'SERIES');
-                    let season = this._findAncestor(item, 'SEASON');
-
-                    // Return `item` (if it matches the identifier)
-                    if(season.number === identifier.season.number && item.number === identifier.number) {
-                        return item;
-                    }
-
-                    // Find episode in `season.titleId`
-                    if(season.number === identifier.season.number) {
-                        return this.getSeasonEpisode(season.titleId, identifier.season.number, identifier.number);
-                    }
-
-                    // Find season in `series.titleId`
-                    return this.getShowSeason(series.titleId, identifier.season.number).then((season) =>
-                        // Find episode in `season.titleId`
-                        this.getSeasonEpisode(season.titleId, identifier.season.number, identifier.number)
-                    );
-                }
-            }
-
-            return Promise.reject(new Error(
-                'Unsupported content type: "' + item.contentType + '"'
-            ));
         });
     }
 

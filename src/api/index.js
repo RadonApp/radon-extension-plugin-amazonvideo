@@ -2,8 +2,8 @@ import IsNil from 'lodash-es/isNil';
 import Merge from 'lodash-es/merge';
 import URI from 'urijs';
 
-import ShimApi from 'neon-extension-source-amazonvideo/core/shim';
 import MetadataInterface from './interfaces/metadata';
+import ShimApi from '../core/shim';
 
 
 const BaseUrl = 'https://atv-ps.amazon.com';

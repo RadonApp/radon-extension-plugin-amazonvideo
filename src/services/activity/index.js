@@ -1,17 +1,13 @@
 import IsNil from 'lodash-es/isNil';
-import Uuid from 'uuid';
 
 import Extension from 'neon-extension-browser/extension';
 import ActivityService, {ActivityEngine} from 'neon-extension-framework/services/source/activity';
-import MessagingBus from 'neon-extension-framework/messaging/bus';
 import Registry from 'neon-extension-framework/core/registry';
 import {createScript} from 'neon-extension-framework/core/helpers/script';
 
-import Api from 'neon-extension-source-amazonvideo/api';
-import Log from 'neon-extension-source-amazonvideo/core/logger';
-import Plugin from 'neon-extension-source-amazonvideo/core/plugin';
-import Shim from 'neon-extension-source-amazonvideo/core/shim';
-import Parser from './core/parser';
+import Log from '../../core/logger';
+import Plugin from '../../core/plugin';
+import Shim from '../../core/shim';
 import PlayerMonitor from './player/monitor';
 
 
@@ -19,7 +15,6 @@ export class AmazonVideoActivityService extends ActivityService {
     constructor() {
         super(Plugin);
 
-        this.bus = null;
         this.engine = null;
         this.monitor = null;
     }
@@ -27,15 +22,9 @@ export class AmazonVideoActivityService extends ActivityService {
     initialize() {
         super.initialize();
 
-        // Construct messaging bus
-        this.bus = new MessagingBus(Plugin.id + ':activity:' + Uuid.v4());
-        this.bus.connect('neon-extension-core:scrobble');
-
         // Construct activity engine
-        this.engine = new ActivityEngine(this.plugin, this.bus, {
-            getDuration: this._getDuration.bind(this),
-            getMetadata: this._getMetadata.bind(this),
-
+        this.engine = new ActivityEngine(this.plugin, {
+            fetchMetadata: this._fetchMetadata.bind(this),
             isEnabled: this._isPlayerVisible.bind(this)
         });
 
@@ -97,24 +86,10 @@ export class AmazonVideoActivityService extends ActivityService {
         return this.monitor.player.getDuration();
     }
 
-    _getMetadata(identifier) {
-        Log.trace('Fetching metadata for %o', identifier);
+    _fetchMetadata(item) {
+        Log.trace('Fetching metadata for %o', item);
 
-        // Retrieve metadata for `identifier`
-        return Api.metadata.resolve(identifier).then((item) => {
-            Log.trace('Received item: %o', item);
-
-            // Parse item into metadata models
-            let metadata = Parser.parse(item);
-
-            if(IsNil(metadata)) {
-                Log.info('Unable to parse item: %o', item);
-                return null;
-            }
-
-            Log.trace('Parsed item, metadata: %o', metadata);
-            return metadata;
-        });
+        return Promise.resolve(item);
     }
 
     _isPlayerVisible() {

@@ -5,7 +5,7 @@ import Merge from 'lodash-es/merge';
 
 import {hasClass, hasClassTree} from 'neon-extension-framework/core/helpers';
 
-import Log from 'neon-extension-source-amazonvideo/core/logger';
+import Log from '../../../core/logger';
 
 
 export default class PlayerObserver extends EventEmitter {
