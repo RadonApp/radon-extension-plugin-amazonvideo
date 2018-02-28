@@ -3,7 +3,7 @@
 
   "content_scripts": [
     {
-      "id": "source.amazonvideo/main",
+      "id": "main",
       "conditions": [
         {
           "pattern": "*://www.amazon.com/dp/*",
@@ -31,8 +31,8 @@
         }
       ],
       "js": [
-        "vendor.js",
-        "shared.js",
+        "common.js",
+        "source/common.js",
         "source/amazonvideo/amazonvideo.js"
       ]
     }
@@ -43,13 +43,16 @@
     "source/activity"
   ],
   "origins": [
-    "*://atv-ps.amazon.com/cdp/catalog/*"
+    "*://amazon.com/*",
+    "*://www.amazon.com/*",
+    "*://atv-ps.amazon.com/*"
   ],
   "web_accessible_resources": [
     "source/amazonvideo/shim/shim.js"
   ],
+
   "webpack": {
-    "chunks": [
+    "modules": [
       "shim"
     ]
   }
