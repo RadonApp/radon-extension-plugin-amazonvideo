@@ -1,0 +1,13 @@
+language: node_js
+node_js:
+- '7'
+script:
+- npm run test
+deploy:
+  provider: npm
+  email: neapp-ci@me.dgardiner.net
+  api_key:
+    secure: TODO
+  on:
+    repo: NeApp/neon-extension-source-amazonvideo
+    tags: true
