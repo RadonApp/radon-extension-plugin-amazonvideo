@@ -1,3 +1,4 @@
+/* eslint-disable no-console, no-new */
 import IsNil from 'lodash-es/isNil';
 
 import Resources from './resources';
