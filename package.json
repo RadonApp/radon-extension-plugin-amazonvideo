@@ -41,6 +41,7 @@
   "peerDependencies": {
     "eventemitter3": "^2.0.0",
     "lodash-es": "^4.16.1",
-    "neon-extension-framework": "^1.7.2"
+    "neon-extension-framework": "^1.7.2",
+    "wes": "^1.0.0-beta.1"
   }
 }

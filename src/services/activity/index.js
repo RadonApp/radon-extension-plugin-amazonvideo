@@ -1,6 +1,6 @@
 import IsNil from 'lodash-es/isNil';
+import Runtime from 'wes/runtime';
 
-import Extension from 'neon-extension-browser/extension';
 import ActivityService, {ActivityEngine} from 'neon-extension-framework/services/source/activity';
 import Registry from 'neon-extension-framework/core/registry';
 import {createScript} from 'neon-extension-framework/core/helpers/script';
@@ -60,8 +60,8 @@ export class AmazonVideoActivityService extends ActivityService {
     }
 
     _inject() {
-        return new Promise((resolve, reject) => {
-            let script = createScript(document, Extension.getUrl('/source/amazonvideo/shim/shim.js'));
+        return new Promise((resolve) => {
+            let script = createScript(document, Runtime.getURL('/source/amazonvideo/shim/shim.js'));
 
             // Bind shim api to page
             Shim.bind(document);
