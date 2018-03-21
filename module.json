@@ -4,32 +4,21 @@
   "content_scripts": [
     {
       "id": "main",
+
       "conditions": [
-        {
-          "pattern": "*://www.amazon.com/dp/*",
-          "pageUrl": {
-            "originAndPathMatches": ".*://www\\.amazon\\.com/dp/.*"
-          }
-        },
-        {
-          "pattern": "*://www.amazon.com/*/dp/*",
-          "pageUrl": {
-            "originAndPathMatches": ".*://www\\.amazon\\.com/.*/dp/.*"
-          }
-        },
-        {
-          "pattern": "*://www.amazon.com/gp/product/*",
-          "pageUrl": {
-            "originAndPathMatches": ".*://www\\.amazon\\.com/gp/product/.*"
-          }
-        },
-        {
-          "pattern": "*://www.amazon.com/gp/video/detail/*",
-          "pageUrl": {
-            "originAndPathMatches": ".*://www\\.amazon\\.com/gp/video/detail/.*"
-          }
-        }
+        { "pageUrl": { "originAndPathMatches": ".*://www\\.amazon\\.com/dp/.*" } },
+        { "pageUrl": { "originAndPathMatches": ".*://www\\.amazon\\.com/.*/dp/.*" } },
+        { "pageUrl": { "originAndPathMatches": ".*://www\\.amazon\\.com/gp/product/.*" } },
+        { "pageUrl": { "originAndPathMatches": ".*://www\\.amazon\\.com/gp/video/detail/.*" } }
       ],
+
+      "matches": [
+        "*://www.amazon.com/dp/*",
+        "*://www.amazon.com/*/dp/*",
+        "*://www.amazon.com/gp/product/*",
+        "*://www.amazon.com/gp/video/detail/*"
+      ],
+
       "js": [
         "common.js",
         "source/common.js",
