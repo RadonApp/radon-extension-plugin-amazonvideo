@@ -6,6 +6,7 @@
   },
 
   "globals": {
+    "content": false,
     "document": false,
     "navigator": false,
     "window": false
