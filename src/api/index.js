@@ -2,6 +2,8 @@ import IsNil from 'lodash-es/isNil';
 import Merge from 'lodash-es/merge';
 import URI from 'urijs';
 
+import {fetch} from 'neon-extension-framework/core/fetch';
+
 import MetadataInterface from './interfaces/metadata';
 import ShimApi from '../core/shim';
 
