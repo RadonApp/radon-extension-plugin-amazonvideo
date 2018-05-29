@@ -1,7 +1,7 @@
 import {Movie, Show, Season, Episode} from 'neon-extension-framework/models/item/video';
 
-import Log from '../../../core/logger';
-import Plugin from '../../../core/plugin';
+import Log from 'neon-extension-source-amazonvideo/Core/Logger';
+import Plugin from 'neon-extension-source-amazonvideo/Core/Plugin';
 
 
 export default class Parser {

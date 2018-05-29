@@ -1,7 +1,7 @@
 /* eslint-disable no-console, no-new */
 import IsNil from 'lodash-es/isNil';
 
-import Resources from './resources';
+import Resources from './Resources';
 
 
 export class AmazonVideoShim {

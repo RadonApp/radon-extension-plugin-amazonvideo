@@ -1,7 +1,7 @@
 import FetchJsonp from 'fetch-jsonp';
 import IsNil from 'lodash-es/isNil';
 
-import {generateRandomString} from 'neon-extension-framework/core/helpers';
+import {generateRandomString} from 'neon-extension-framework/Utilities/Value';
 
 
 export default class ConfigurationResource {

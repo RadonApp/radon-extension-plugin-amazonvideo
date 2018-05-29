@@ -1,5 +1,6 @@
-import Log from '../../core/logger';
-import Interface from './base';
+import Log from 'neon-extension-source-amazonvideo/Core/Logger';
+
+import Interface from './Base';
 
 
 export default class MetadataInterface extends Interface {

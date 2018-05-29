@@ -3,9 +3,8 @@ import EventEmitter from 'eventemitter3';
 import IsNil from 'lodash-es/isNil';
 import Merge from 'lodash-es/merge';
 
-import {hasClass, hasClassTree} from 'neon-extension-framework/core/helpers';
-
-import Log from '../../../core/logger';
+import {hasClass, hasClassTree} from 'neon-extension-framework/Utilities/Document';
+import Log from 'neon-extension-source-amazonvideo/Core/Logger';
 
 
 export default class PlayerObserver extends EventEmitter {
@@ -45,7 +44,7 @@ export default class PlayerObserver extends EventEmitter {
 
             let attemptBind = () => {
                 // Try find video element
-                let playerContent = document.querySelector('#dv-player-content');
+                let playerContent = document.querySelector('#dv-web-player');
 
                 if(playerContent !== null) {
                     // Update state
@@ -54,11 +53,6 @@ export default class PlayerObserver extends EventEmitter {
                     // Observe "#dv-player-content" changes
                     this._observe(playerContent, {
                         attributes: true,
-                        childList: true
-                    });
-
-                    // Observer "#dv-web-player" changes
-                    this._observe(playerContent.querySelector('#dv-web-player'), {
                         childList: true
                     });
 

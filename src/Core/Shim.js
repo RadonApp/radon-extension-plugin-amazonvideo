@@ -1,6 +1,6 @@
 import EventEmitter from 'eventemitter3';
 
-import Log from './logger';
+import Log from './Logger';
 
 
 class AmazonVideoShimApi extends EventEmitter {

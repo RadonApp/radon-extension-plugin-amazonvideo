@@ -2,11 +2,11 @@
 import EventEmitter from 'eventemitter3';
 import IsNil from 'lodash-es/isNil';
 
-import {Movie, Show, Season, Episode} from 'neon-extension-framework/models/item/video';
+import Log from 'neon-extension-source-amazonvideo/Core/Logger';
+import Plugin from 'neon-extension-source-amazonvideo/Core/Plugin';
+import {Movie, Show, Season, Episode} from 'neon-extension-framework/Models/Metadata/Video';
 
-import Log from '../../../core/logger';
-import Plugin from '../../../core/plugin';
-import PlayerObserver from './observer';
+import PlayerObserver from './Observer';
 
 
 const URL_PATTERNS = [

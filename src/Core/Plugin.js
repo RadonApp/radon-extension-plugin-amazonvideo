@@ -1,4 +1,4 @@
-import SourcePlugin from 'neon-extension-framework/base/plugins/source';
+import SourcePlugin from 'neon-extension-framework/Models/Plugin/Source';
 
 
 export class AmazonVideoPlugin extends SourcePlugin {

@@ -20,16 +20,15 @@
       ],
 
       "js": [
-        "common.js",
-        "source/common.js",
-        "source/amazonvideo/amazonvideo.js"
+        "Common.js",
+        "Modules/Common.js",
+        "Modules/neon-extension-source-amazonvideo/Main.js"
       ]
     }
   ],
   "services": [
-    "configuration",
-
-    "source/activity"
+    "Configuration",
+    "Source:Activity"
   ],
   "origins": [
     "*://amazon.com/*",
@@ -37,12 +36,12 @@
     "*://atv-ps.amazon.com/*"
   ],
   "web_accessible_resources": [
-    "source/amazonvideo/shim/shim.js"
+    "Modules/neon-extension-source-amazonvideo/Shim.js"
   ],
 
   "webpack": {
-    "modules": [
-      "shim"
-    ]
+    "modules": {
+      "Shim": { "entry": true }
+    }
   }
 }

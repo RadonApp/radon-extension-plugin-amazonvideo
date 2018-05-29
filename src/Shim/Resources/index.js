@@ -1,4 +1,4 @@
-import ConfigurationResource from './configuration';
+import ConfigurationResource from './Configuration';
 
 
 export default {
