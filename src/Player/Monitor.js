@@ -57,15 +57,12 @@ export default class PlayerMonitor extends EventEmitter {
         this._currentItem = null;
     }
 
-    getDuration() {
-        return PlayerObserver.getDuration();
-    }
-
     // region Event Handlers
 
     onOpened() {
         Log.trace('PlayerMonitor.onOpened');
 
+        // Ensure item exists
         if(IsNil(this._currentItem)) {
             return;
         }
@@ -78,20 +75,16 @@ export default class PlayerMonitor extends EventEmitter {
         Log.trace('PlayerMonitor.onLoaded');
 
         // Update item
-        if(this._updateItem()) {
-            this.emit('created', this._currentItem);
-        } else if(!IsNil(this._currentItem)) {
-            this.emit('loaded', this._currentItem);
+        if(!this._updateItem()) {
+            return;
         }
+
+        // Emit "loaded" event
+        this.emit('loaded', this._currentItem);
     }
 
     onStarted() {
         Log.trace('PlayerMonitor.onStarted');
-
-        // Update item
-        if(this._updateItem()) {
-            this.emit('created', this._currentItem);
-        }
 
         // Ensure item exists
         if(IsNil(this._currentItem)) {
@@ -148,44 +141,37 @@ export default class PlayerMonitor extends EventEmitter {
 
             // Clear current item
             this._currentItem = null;
-
-            return false;
-        }
-
-        // Ensure track has changed
-        if(!IsNil(this._currentItem) && this._currentItem.matches(item)) {
             return false;
         }
 
         // Update current item
         this._currentItem = item;
-
         return true;
     }
 
     _createItem() {
-        let id = this._getPageAsin();
+        let asin = this._getPageAsin();
         let title = this._currentTitle;
         let subtitle = this._currentSubtitle;
 
-        if(IsNil(id) || !this._stringExists(title)) {
+        if(IsNil(asin) || !this._stringExists(title)) {
             return null;
         }
 
         // Movie
         if(IsNil(subtitle)) {
-            return this._createMovie(title, id);
+            return this._createMovie(title, asin);
         }
 
         // Episode
-        return this._createEpisode(title, id, ...subtitle);
+        return this._createEpisode(title, asin, ...subtitle);
     }
 
-    _createMovie(title, id) {
+    _createMovie(title, asin) {
         return Movie.create(Plugin.id, {
-            keys: this._createKeys({
-                id
-            }),
+            keys: {
+                asin
+            },
 
             // Metadata
             title
@@ -198,11 +184,11 @@ export default class PlayerMonitor extends EventEmitter {
         });
     }
 
-    _createSeason(showTitle, id, number) {
+    _createSeason(showTitle, asin, number) {
         return Season.create(Plugin.id, {
-            keys: this._createKeys({
-                id
-            }),
+            keys: {
+                asin
+            },
 
             // Metadata
             number,
@@ -227,11 +213,6 @@ export default class PlayerMonitor extends EventEmitter {
             // Children
             season: this._createSeason(showTitle, id, season)
         });
-    }
-
-    _createKeys(keys) {
-        // TODO Add `keys` with country suffixes
-        return keys;
     }
 
     _getPageAsin() {
