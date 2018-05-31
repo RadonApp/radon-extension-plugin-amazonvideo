@@ -1,67 +1,66 @@
 /* eslint-disable no-console, no-new */
+import EventEmitter from 'eventemitter3';
 import IsNil from 'lodash-es/isNil';
 
-import Resources from './Resources';
+import {ConfigurationResource} from './Resources';
 
 
-export class AmazonVideoShim {
-    start() {
-        // Listen for shim requests
-        document.body.addEventListener('neon.request', (e) => this._onRequestReceived(e));
+export class ShimRequests extends EventEmitter {
+    constructor() {
+        super();
 
-        // Emit "ready" event
-        this.emit('ready');
+        // Ensure body exists
+        if(IsNil(document.body)) {
+            throw new Error('Body is not available');
+        }
+
+        // Bind to events
+        this._bind('neon.request', (e) => this._onRequest(e));
     }
 
-    emit(type, data) {
-        // Construct event
-        let event = new CustomEvent('neon.event', {
-            detail: {
-                type: type,
-                data: data || null
-            }
-        });
+    _bind(event, callback) {
+        try {
+            document.body.addEventListener(event, callback);
+        } catch(e) {
+            console.error('Unable to bind to "%s"', event, e);
+            return false;
+        }
 
-        // Emit event on the document
-        document.body.dispatchEvent(event);
+        console.debug('Bound to "%s"', event);
+        return true;
     }
 
-    respond(requestId, type, data) {
-        this.emit('#' + requestId, {
-            type: type,
-            data: data || null
-        });
-    }
-
-    resolve(requestId, data) {
-        this.respond(requestId, 'resolve', data);
-    }
-
-    reject(requestId, data) {
-        this.respond(requestId, 'reject', data);
-    }
-
-    _onRequestReceived(e) {
-        if(!e || !e.detail || !e.detail.id || !e.detail.type) {
-            console.error('Unknown event received:', e);
+    _onRequest(e) {
+        if(!e || !e.detail) {
+            console.error('Invalid request received:', e);
             return;
         }
 
-        let id = e.detail.id;
-        let type = e.detail.type;
+        // Decode request
+        let request;
 
-        // Process request
-        if(!IsNil(Resources[type])) {
-            Resources[type].request(e.detail.data).then(
-                (data) => this.resolve(id, data),
-                (data) => this.reject(id, data)
-            );
-        } else {
-            console.warn('Received request for an unknown resource: %o', type);
-            this.reject(id);
+        try {
+            request = JSON.parse(e.detail);
+        } catch(err) {
+            console.error('Unable to decode request: %s', err && err.message, err);
+            return;
         }
+
+        // Emit request
+        this.emit(request.type, ...request.args);
     }
 }
 
-// Initialize shim
-(new AmazonVideoShim()).start();
+export class Shim {
+    constructor() {
+        this.requests = new ShimRequests();
+
+        // Construct resources
+        this.resources = {
+            configuration: new ConfigurationResource(this)
+        };
+    }
+}
+
+// Construct shim
+(new Shim());

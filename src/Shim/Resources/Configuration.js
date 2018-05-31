@@ -1,13 +1,28 @@
+/* eslint-disable no-console */
 import FetchJsonp from 'fetch-jsonp';
 import IsNil from 'lodash-es/isNil';
 
 import {generateRandomString} from 'neon-extension-framework/Utilities/Value';
 
+import Resource from './Base';
 
-export default class ConfigurationResource {
-    static request() {
+
+export default class ConfigurationResource extends Resource {
+    constructor(shim) {
+        super(shim);
+
+        this._token = null;
+
+        // Bind to requests
+        this.requests.on('configuration', this.request.bind(this));
+
+        // Emit "configuration" event
+        this.request();
+    }
+
+    request() {
         // Retrieve player token
-        return this._getToken().then((token) => {
+        this._getToken().then((token) => {
             // Retrieve player configuration
             let playerConfig = this._getPlayerConfiguration();
 
@@ -26,8 +41,8 @@ export default class ConfigurationResource {
                 ));
             }
 
-            // Return response
-            return {
+            // Emit "configuration" event
+            this.emit('configuration', {
                 deviceID: deviceId,
                 deviceTypeID: 'AOAGZA014O5RE',  // HTML5 Device
                 firmware: 1,
@@ -35,11 +50,24 @@ export default class ConfigurationResource {
                 marketplaceID: playerConfig.marketplaceId,
                 customerID: playerConfig.customerId,
                 token: token
-            };
+            });
+
+            // Resolve promise
+            return true;
+        }, (err) => {
+            console.error('Unable to retrieve configuration', err && err.message ? err.message : err);
+
+            // Emit "configuration" event
+            this._emit('configuration', null);
         });
     }
 
-    static _getToken() {
+    _getToken() {
+        if(!IsNil(this._token)) {
+            return Promise.resolve(this._token);
+        }
+
+        // Request token
         return FetchJsonp('https://www.amazon.com/gp/video/streaming/player-token.json', {
             jsonpCallbackFunction: 'onWebToken_' + generateRandomString(32, '0123456789abcdefghijklmnopqrstuvwxyz')
         }).then((response) => {
@@ -49,6 +77,7 @@ export default class ConfigurationResource {
                 ));
             }
 
+            // Parse response
             return response.json().then((data) => {
                 if(IsNil(data.token)) {
                     return Promise.reject(new Error(
@@ -56,21 +85,25 @@ export default class ConfigurationResource {
                     ));
                 }
 
+                // Cache token
+                this._token = data.token;
+
+                // Resolve promise with token
                 return data.token;
             });
         });
     }
 
-    static _getPlayerConfiguration() {
+    _getPlayerConfiguration() {
         // Retrieve player node
-        let player = document.querySelector('#dv-web-player');
+        let player = document.querySelector('#av-wconf-dv-web-player-cfg');
 
         if(IsNil(player)) {
             return null;
         }
 
         // Retrieve configuration attribute
-        let value = player.attributes['data-config'].value;
+        let value = player.innerText;
 
         if(IsNil(value)) {
             return null;

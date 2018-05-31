@@ -87,16 +87,4 @@ export default class MetadataInterface extends Interface {
             return null;
         });
     }
-
-    _findAncestor(item, contentType) {
-        for(let i = 0; i < item.ancestorTitles.length; ++i) {
-            let ancestor = item.ancestorTitles[i];
-
-            if(ancestor.contentType === contentType) {
-                return ancestor;
-            }
-        }
-
-        return null;
-    }
 }

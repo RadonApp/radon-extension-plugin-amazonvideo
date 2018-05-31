@@ -1,11 +1,10 @@
-import IsNil from 'lodash-es/isNil';
 import Merge from 'lodash-es/merge';
 import URI from 'urijs';
 
-import ShimApi from 'neon-extension-source-amazonvideo/Core/Shim';
 import {fetch} from 'neon-extension-framework/Core/Fetch';
 
 import MetadataInterface from './Interfaces/Metadata';
+import ShimApi from './Shim';
 
 
 const BaseUrl = 'https://atv-ps.amazon.com';
@@ -22,30 +21,28 @@ export class Api {
         }, options || {});
 
         // Retrieve configuration
-        return this._getConfiguration()
-            .then((configuration) => {
-                // Add configuration parameters
-                options.query = Merge({}, configuration, options.query || {});
+        return ShimApi.configuration().then((configuration) => {
+            // Add configuration parameters
+            options.query = Merge({}, configuration, options.query || {});
 
-                // Build URL
-                let url = new URI(BaseUrl + path)
-                    .search(options.query)
-                    .toString();
+            // Build URL
+            let url = new URI(BaseUrl + path)
+                .search(options.query)
+                .toString();
 
-                // Send request
-                return fetch(url, {
-                    method: method,
-                    credentials: 'include'
-                });
-            })
-            .then((response) => {
-                if(!response.ok) {
-                    return Promise.reject(new Error('Request failed'));
-                }
-
-                // TODO Verify content-type
-                return response.json();
+            // Send request
+            return fetch(url, {
+                method: method,
+                credentials: 'include'
             });
+        }).then((response) => {
+            if(!response.ok) {
+                return Promise.reject(new Error('Request failed'));
+            }
+
+            // TODO Verify content-type
+            return response.json();
+        });
     }
 
     // region Methods
@@ -60,22 +57,6 @@ export class Api {
                 'videoMaterialType': 'Feature',
                 'titleDecorationScheme': 'primary-content'
             }
-        });
-    }
-
-    // endregion
-
-    // region Private methods
-
-    _getConfiguration() {
-        if(!IsNil(this._configuration)) {
-            return Promise.resolve(this._configuration);
-        }
-
-        return ShimApi.request('configuration').then((configuration) => {
-            this._configuration = configuration;
-
-            return configuration;
         });
     }
 
