@@ -5,7 +5,7 @@ import Runtime from 'wes/runtime';
 
 import {awaitBody} from 'neon-extension-framework/Document/Await';
 import {createScript} from 'neon-extension-framework/Utilities/Script';
-import Log from 'neon-extension-source-netflix/Core/Logger';
+import Log from 'neon-extension-source-amazonvideo/Core/Logger';
 
 
 export class ShimEvents extends EventEmitter {

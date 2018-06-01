@@ -12,7 +12,7 @@ import ShimApi from 'neon-extension-source-amazonvideo/Api/Shim';
 import {MediaTypes} from 'neon-extension-framework/Core/Enums';
 
 
-export class NetflixActivityService extends ActivityService {
+export class AmazonVideoActivityService extends ActivityService {
     constructor() {
         super(Plugin);
 
@@ -295,4 +295,4 @@ export class NetflixActivityService extends ActivityService {
 }
 
 // Register service
-Registry.registerService(new NetflixActivityService());
+Registry.registerService(new AmazonVideoActivityService());
