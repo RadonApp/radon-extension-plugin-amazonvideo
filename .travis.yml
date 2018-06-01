@@ -7,7 +7,7 @@ deploy:
   provider: npm
   email: neapp-ci@me.dgardiner.net
   api_key:
-    secure: TODO
+    secure: FkDij5LHwEZzvCS0zNglvVLQcTYbQkUbvRVPzUTcNyOhx9Olp1e4/rfIcRMQTUdX/ambcDOE6zNwV5B1NDK61d9VHutml94McYIFQU6XqNf2iSqHGG4bVQXrMkEgcIxXYFkbKt9nN7hUlOZx8uu7Anp986uaOegGgSyKQffW8jEKoTeylTaWyv5WOKN17An4nr1HKzoXXzLBigt5ICvlMXNFsX0Yhznh/zHXIqYufhodEcSHlw+nVBHR82CWyJRlBRZfqX/SnOeJ2GWBth5YAQ8ssCc9XuIslSwdB0ksYtE4VA1k/AxAMgjnRnGtS/NthylF4APhfjtQ+saUCR5GmWlanud2j77MAxCWZN/oHE84jgqY0lz8uRs/QTsftoWVScLBIwmrLHFaUG68i3xok5qRHaWBQ5TXiulO0ICtYPEgE8tRWOB6YQijiE7TmD1De7FMnUY/7/ifBwE728IyIqBuQ2QyJkPteGSFQBMboIJAzI4uutcPSdlU+up54awspIE9vlXmwsXwzjMZnIzzQvfx/hfzQc7RJGo6Fl63pHrX9fqhiG3Ze2nuAxT44t0STK1mE6R3h4Z9Il0fUUJ+827M2ItsjDiuYHpXDwHByD18z2OUVHk/60gMPjJwWEGK9HEb4be0mJcIuIs0O6f19FG6yq+b9ExKge6ziW0rxfI=
   on:
     repo: NeApp/neon-extension-source-amazonvideo
     tags: true
