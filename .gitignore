@@ -1,5 +1,7 @@
 /Build
 /node_modules
+
 /package-lock.json
+/TAG_MESSAGE
 
 *.iml
