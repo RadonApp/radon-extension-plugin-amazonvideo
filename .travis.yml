@@ -1,8 +1,14 @@
 language: node_js
 node_js:
 - '7'
+before_install:
+- npm install coveralls
+- npm install NeApp/neon-extension-framework#$TRAVIS_BRANCH > /dev/null 2>&1 && echo "Installed NeApp/neon-extension-framework#$TRAVIS_BRANCH" || true
 script:
 - npm run test
+- npm run lint
+after_success:
+- cat ./Build/Coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
 deploy:
   provider: npm
   email: neapp-ci@me.dgardiner.net
