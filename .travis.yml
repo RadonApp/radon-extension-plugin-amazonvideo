@@ -1,9 +1,10 @@
 language: node_js
 node_js:
 - '7'
-before_install:
-- npm install coveralls
+install:
 - npm install NeApp/neon-extension-framework#$TRAVIS_BRANCH > /dev/null 2>&1 && echo "Installed NeApp/neon-extension-framework#$TRAVIS_BRANCH" || true
+- npm install
+- npm install coveralls
 script:
 - npm run test
 - npm run lint
