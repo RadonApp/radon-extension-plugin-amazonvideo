@@ -25,26 +25,26 @@
   "plugins": [
     "babel",
     "react",
-    "import"
+    "@fuzeman/eslint-plugin-import"
   ],
 
   "rules": {
-    "import/default": "error",
-    "import/export": "error",
-    "import/named": "error",
-    "import/namespace": "error",
-    "import/no-unresolved": ["error", {
+    "@fuzeman/import/default": "error",
+    "@fuzeman/import/export": "error",
+    "@fuzeman/import/named": "error",
+    "@fuzeman/import/namespace": "error",
+    "@fuzeman/import/no-unresolved": ["error", {
       "ignore": [
         "^jquery$",
         "^react(-dom)?$"
       ]
     }],
 
-    "import/extensions": ["warn", { "js": "never" }],
-    "import/newline-after-import": ["warn", { "count": 2 }],
-    "import/no-duplicates": "warn",
-    "import/order": ["warn", { "groups": [["builtin", "external"], "internal", ["parent", "sibling"], "index"], "newlines-between": "always" }],
-    "import/unambiguous": "warn",
+    "@fuzeman/import/extensions": ["warn", { "js": "never" }],
+    "@fuzeman/import/newline-after-import": ["warn", { "count": 2 }],
+    "@fuzeman/import/no-duplicates": "warn",
+    "@fuzeman/import/order": ["warn", { "groups": [["builtin", "external"], ["internal", "project"], ["parent", "sibling"], "index"], "newlines-between": "always" }],
+    "@fuzeman/import/unambiguous": "warn",
 
     "react/jsx-uses-react": "error",
     "react/jsx-uses-vars": "error",
@@ -213,9 +213,48 @@
     "yoda": [2, "never"]
   },
 
+  "overrides": [
+    {
+      "files": ["karma.*.js", "**/*.Spec.js"],
+
+      "env": {
+        "jasmine": true
+      },
+
+      "plugins": [
+        "jasmine"
+      ],
+
+      "rules": {
+        "@fuzeman/import/unambiguous": "off",
+
+        "jasmine/expect-matcher": "warn",
+        "jasmine/expect-single-argument": "warn",
+        "jasmine/no-focused-tests": "error",
+        "jasmine/no-disabled-tests": "warn",
+        "jasmine/no-suite-dupes": ["warn", "branch"],
+        "jasmine/no-spec-dupes": ["warn", "branch"],
+        "jasmine/no-suite-callback-args": "error",
+        "jasmine/no-unsafe-spy": "warn",
+        "jasmine/no-global-setup": "error",
+        "jasmine/no-promise-without-done-fail": "warn",
+        "jasmine/no-expect-in-setup-teardown": "warn",
+        "jasmine/new-line-between-declarations": "warn",
+        "jasmine/new-line-before-expect": "warn",
+        "jasmine/prefer-jasmine-matcher": "warn",
+        "jasmine/prefer-toHaveBeenCalledWith": "warn",
+
+        "no-console": "off"
+      }
+    }
+  ],
+
   "settings": {
     "import/external-module-folders": [
       "node_modules"
+    ],
+    "import/project-modules": [
+      "neon-extension-*"
     ]
   }
 }
