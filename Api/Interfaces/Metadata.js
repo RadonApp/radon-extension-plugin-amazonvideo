@@ -1,5 +1,4 @@
-import Log from 'neon-extension-source-amazonvideo/Core/Logger';
-
+import Log from '../../Core/Logger';
 import Interface from './Base';
 
 

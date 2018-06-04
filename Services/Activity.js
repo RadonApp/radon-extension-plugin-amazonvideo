@@ -4,12 +4,13 @@ import IsNil from 'lodash-es/isNil';
 
 import ActivityService, {ActivityEngine} from 'neon-extension-framework/Services/Source/Activity';
 import Registry from 'neon-extension-framework/Core/Registry';
-import Api from 'neon-extension-source-amazonvideo/Api';
-import Log from 'neon-extension-source-amazonvideo/Core/Logger';
-import PlayerMonitor from 'neon-extension-source-amazonvideo/Player/Monitor';
-import Plugin from 'neon-extension-source-amazonvideo/Core/Plugin';
-import ShimApi from 'neon-extension-source-amazonvideo/Api/Shim';
 import {MediaTypes} from 'neon-extension-framework/Core/Enums';
+
+import Api from '../Api';
+import Log from '../Core/Logger';
+import PlayerMonitor from '../Player/Monitor';
+import Plugin from '../Core/Plugin';
+import ShimApi from '../Api/Shim';
 
 
 export class AmazonVideoActivityService extends ActivityService {

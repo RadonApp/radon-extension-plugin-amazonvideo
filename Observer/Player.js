@@ -5,8 +5,7 @@ import IsEqual from 'lodash-es/isEqual';
 import IsNil from 'lodash-es/isNil';
 import Map from 'lodash-es/map';
 
-import Log from 'neon-extension-source-amazonvideo/Core/Logger';
-
+import Log from '../Core/Logger';
 import Observer from './Base';
 
 
