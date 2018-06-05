@@ -17,6 +17,7 @@ module.exports = function(config) {
         files: [
             'node_modules/@babel/polyfill/dist/polyfill.js',
             'node_modules/jasmine-promises/dist/jasmine-promises.js',
+            'node_modules/whatwg-fetch/fetch.js',
 
             'karma.init.js',
 

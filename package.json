@@ -56,7 +56,8 @@
     "karma-spec-reporter": "0.0.31",
     "karma-webpack": "^2.0.6",
     "react": "15.3.0",
-    "webpack": "^3.8.1"
+    "webpack": "^3.8.1",
+    "whatwg-fetch": "2.0.3"
   },
   "scripts": {
     "lint": "eslint .",
