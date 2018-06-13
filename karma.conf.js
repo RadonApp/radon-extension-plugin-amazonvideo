@@ -4,6 +4,12 @@ var uuid = require('uuid');
 var webpack = require('webpack');
 
 
+let libraries = [
+    fs.realpathSync(path.resolve(__dirname, 'node_modules/neon-extension-framework')),
+    fs.realpathSync(path.resolve(__dirname, 'node_modules/lodash-es')),
+    fs.realpathSync(path.resolve(__dirname, 'node_modules/wes'))
+];
+
 module.exports = function(config) {
     var phantomStoragePath = path.resolve('.phantomjs/' + uuid.v4());
 
@@ -19,13 +25,11 @@ module.exports = function(config) {
             'node_modules/jasmine-promises/dist/jasmine-promises.js',
             'node_modules/whatwg-fetch/fetch.js',
 
-            'karma.init.js',
-
-            {pattern: '!(.phantomjs|Build|node_modules)/{**/,}*.js', watched: false}
+            './karma.init.js'
         ],
 
         preprocessors: {
-            '!(.phantomjs|Build|node_modules)/{**/,}*.js': ['webpack', 'sourcemap']
+            './karma.init.js': ['webpack', 'sourcemap']
         },
 
         reporters: [
@@ -65,6 +69,12 @@ module.exports = function(config) {
 
                 options: {
                     settings: {
+                        userAgent: (
+                            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) ' +
+                            'Chrome/66.0.3359.181 ' +
+                            'Safari/537.36 ' +
+                            'PhantomJS'
+                        ),
                         webSecurityEnabled: false
                     }
                 }
@@ -79,6 +89,7 @@ module.exports = function(config) {
                     {
                         test: /\.js$/,
                         include: path.resolve('./'),
+                        exclude: libraries,
 
                         oneOf: [
                             { test: /\.Spec\.js$/, use: { loader: 'babel-loader' } },
@@ -87,14 +98,15 @@ module.exports = function(config) {
                     },
                     {
                         test: /\.js$/,
-                        include: [
-                            fs.realpathSync(path.resolve(__dirname, 'node_modules/neon-extension-framework')),
-                            fs.realpathSync(path.resolve(__dirname, 'node_modules/lodash-es')),
-                            fs.realpathSync(path.resolve(__dirname, 'node_modules/wes'))
-                        ],
+                        include: libraries,
 
                         use: {
-                            loader: 'babel-loader'
+                            loader: 'babel-loader',
+                            options: {
+                                babelrc: true,
+                                extends: path.join(`${__dirname}/.babelrc`),
+                                cacheDirectory: true
+                            }
                         }
                     },
                     {
