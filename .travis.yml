@@ -1,17 +1,19 @@
 language: node_js
 node_js:
 - '7'
+before_install:
+- npm install -g npm@'^5.10.0'
+- npm install -g NeApp/neon-extension-build#$TRAVIS_BRANCH || npm install -g NeApp/neon-extension-build#develop
 install:
-- npm install NeApp/neon-extension-framework#$TRAVIS_BRANCH > /dev/null 2>&1 && echo "Installed NeApp/neon-extension-framework#$TRAVIS_BRANCH" || true
 - npm install
-- npm dedupe
-- npm ls
-- npm install coveralls
+- npm ls --only production
+- neb travis:install $TRAVIS_BRANCH
 script:
 - npm run test
 - npm run lint
 - if [ ! -f ./Build/Coverage/lcov.info ]; then exit 1; fi
 after_success:
+- npm install coveralls
 - cat ./Build/Coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
 deploy:
   provider: npm
