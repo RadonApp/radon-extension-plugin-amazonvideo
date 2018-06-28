@@ -1,7 +1,6 @@
 /* eslint-disable no-multi-spaces, key-spacing */
 import EventEmitter from 'eventemitter3';
 import IsNil from 'lodash-es/isNil';
-import IsString from 'lodash-es/isString';
 
 import {Movie, Show, Season, Episode} from 'neon-extension-framework/Models/Metadata/Video';
 
@@ -22,19 +21,16 @@ export default class PlayerMonitor extends EventEmitter {
         super();
 
         // Private attributes
-        this._currentTitle = null;
-        this._currentSubtitle = null;
-
         this._currentItem = null;
+        this._currentMedia = null;
 
         // Bind to player events
+        PlayerObserver.on('media.changed',  this.onMediaChanged.bind(this));
+
         PlayerObserver.on('opened',         this.onOpened.bind(this));
         PlayerObserver.on('closed',         this.onClosed.bind(this));
         PlayerObserver.on('loaded',         this.onLoaded.bind(this));
         PlayerObserver.on('started',        this.onStarted.bind(this));
-
-        PlayerObserver.on('title',          this.onTitleChanged.bind(this));
-        PlayerObserver.on('subtitle',       this.onSubtitleChanged.bind(this));
 
         PlayerObserver.on('paused',         this.emit.bind(this, 'paused'));
         PlayerObserver.on('stopped',        this.emit.bind(this, 'stopped'));
@@ -52,10 +48,8 @@ export default class PlayerMonitor extends EventEmitter {
         Log.trace('PlayerMonitor.reset');
 
         // Reset state
-        this._currentTitle = null;
-        this._currentSubtitle = null;
-
         this._currentItem = null;
+        this._currentMedia = null;
     }
 
     // region Event Handlers
@@ -107,16 +101,10 @@ export default class PlayerMonitor extends EventEmitter {
         this.emit('closed', this._currentItem);
     }
 
-    onTitleChanged({ previous, current }) {
-        Log.trace('PlayerMonitor.onTitleChanged: %o -> %o', previous, current);
+    onMediaChanged({ previous, current }) {
+        Log.trace('PlayerMonitor.onMediaChanged: %o -> %o', previous, current);
 
-        this._currentTitle = current;
-    }
-
-    onSubtitleChanged({ previous, current }) {
-        Log.trace('PlayerMonitor.onSubtitleChanged: %o -> %o', previous, current);
-
-        this._currentSubtitle = current;
+        this._currentMedia = current;
     }
 
     // endregion
@@ -135,10 +123,7 @@ export default class PlayerMonitor extends EventEmitter {
 
         // Ensure track exists
         if(IsNil(item)) {
-            Log.warn('Unable to parse item', {
-                title: this._currentTitle,
-                subtitle: this._currentSubtitle
-            });
+            Log.warn('Unable to parse item', this._currentMedia);
 
             // Clear current item
             this._currentItem = null;
@@ -151,24 +136,35 @@ export default class PlayerMonitor extends EventEmitter {
     }
 
     _createItem() {
-        let asin = this._getPageAsin();
-        let title = this._currentTitle;
-        let subtitle = this._currentSubtitle;
-
-        if(IsNil(asin) || !this._stringExists(title)) {
+        if(IsNil(this._currentMedia)) {
             return null;
         }
 
-        // Movie
-        if(IsNil(subtitle)) {
-            return this._createMovie(title, asin);
+        // Retrieve ASIN
+        let asin = this._getPageAsin();
+
+        if(IsNil(asin)) {
+            return null;
         }
 
-        // Episode
-        return this._createEpisode(title, asin, ...subtitle);
+        // Create metadata
+        let media = this._currentMedia;
+
+        // - Movie
+        if(media.type === 'movie') {
+            return this._createMovie(asin, media);
+        }
+
+        // - Episode
+        if(media.type === 'episode') {
+            return this._createEpisode(asin, media);
+        }
+
+        // Unknown media type
+        throw new Error(`Unknown media type: ${media.type}`);
     }
 
-    _createMovie(title, asin) {
+    _createMovie(asin, { title }) {
         return Movie.create(Plugin.id, {
             keys: {
                 asin
@@ -179,13 +175,18 @@ export default class PlayerMonitor extends EventEmitter {
         });
     }
 
-    _createShow(title) {
-        return Show.create(Plugin.id, {
-            title
+    _createEpisode(asin, { number, title, season}) {
+        return Episode.create(Plugin.id, {
+            // Metadata
+            number,
+            title,
+
+            // Children
+            season: this._createSeason(asin, season)
         });
     }
 
-    _createSeason(showTitle, asin, number) {
+    _createSeason(asin, { number, show }) {
         return Season.create(Plugin.id, {
             keys: {
                 asin
@@ -195,24 +196,13 @@ export default class PlayerMonitor extends EventEmitter {
             number,
 
             // Children
-            show: this._createShow(showTitle)
+            show: this._createShow(show)
         });
     }
 
-    _createEpisode(showTitle, id, identifier) {
-        let { season, number, title } = this._parseEpisodeIdentifier(identifier);
-
-        if(IsNil(season) || IsNil(number) || IsNil(title)) {
-            return null;
-        }
-
-        return Episode.create(Plugin.id, {
-            // Metadata
-            title,
-            number,
-
-            // Children
-            season: this._createSeason(showTitle, id, season)
+    _createShow({ title }) {
+        return Show.create(Plugin.id, {
+            title
         });
     }
 
@@ -236,50 +226,6 @@ export default class PlayerMonitor extends EventEmitter {
 
         Log.warn('%o didn\'t match any url patterns', url);
         return null;
-    }
-
-    _parseEpisodeIdentifier(identifier) {
-        let match = /^Season (\d+), Ep\. (\d+) (.+)$/g.exec(identifier);
-
-        if(IsNil(match)) {
-            return {
-                season: null,
-                number: null,
-
-                title: null
-            };
-        }
-
-        // Try parse numbers
-        try {
-            return {
-                season: parseInt(match[1], 10),
-                number: parseInt(match[2], 10),
-
-                title: match[3]
-            };
-        } catch(e) {
-            Log.warn('Unable to parse identifier: %o', identifier);
-
-            return {
-                season: null,
-                number: null,
-
-                title: null
-            };
-        }
-    }
-
-    _stringExists(value) {
-        if(IsNil(value)) {
-            return false;
-        }
-
-        if(!IsString(value)) {
-            return false;
-        }
-
-        return value.length > 0;
     }
 
     // endregion
