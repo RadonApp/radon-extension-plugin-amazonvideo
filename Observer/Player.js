@@ -346,7 +346,7 @@ export class PlayerObserver extends Observer {
 
         // Create movie (no identifier exists)
         if(subtitles.length < 1) {
-            this._createMovie(title);
+            return this._createMovie(title);
         }
 
         // Create episode
