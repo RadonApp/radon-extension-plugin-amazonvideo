@@ -302,6 +302,8 @@ export class PlayerObserver extends Observer {
             this.subtitle.all()
         );
 
+        Log.trace('Media detected: %o', current);
+
         // Ensure media has changed
         if(IsEqual(this._currentMedia, current)) {
             return;
@@ -334,6 +336,7 @@ export class PlayerObserver extends Observer {
 
         // Ensure title exists
         if(IsNil(title) || !IsString(title) || title.length <= 0) {
+            Log.debug('Unable to detect media, no title defined (%o)', title);
             return null;
         }
 
@@ -365,6 +368,7 @@ export class PlayerObserver extends Observer {
         let { season, number, title } = this._parseEpisodeIdentifier(identifier);
 
         if(IsNil(season) || IsNil(number) || IsNil(title)) {
+            Log.debug('Unable to detect media, no identifier found (%o)', identifier);
             return null;
         }
 
