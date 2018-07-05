@@ -79,6 +79,13 @@ export class AmazonVideoActivityService extends ActivityService {
                 return Promise.reject(new Error('Unable to fetch series metadata'));
             }
 
+            // Update season
+            episode.season.update(Plugin.id, {
+                keys: {
+                    id: metadata.titleId
+                }
+            });
+
             // Update show
             episode.season.show.update(Plugin.id, {
                 keys: {
@@ -139,16 +146,16 @@ export class AmazonVideoActivityService extends ActivityService {
     }
 
     fetchMetadata(item) {
-        let id = Get(item.season.show.keys, [Plugin.id, 'id']);
+        let showId = Get(item.season.show.keys, [Plugin.id, 'id']);
 
-        if(IsNil(id)) {
+        if(IsNil(showId)) {
             return Promise.resolve(item);
         }
 
-        let fetchedAt = Date.now();
-
         // Update item `fetchedAt` timestamp
-        item.update(Plugin.id, { fetchedAt });
+        item.update(Plugin.id, {
+            fetchedAt: Date.now()
+        });
 
         // Ignore movies
         if(item.type !== MediaTypes.Video.Episode) {
@@ -157,91 +164,36 @@ export class AmazonVideoActivityService extends ActivityService {
 
         // Update metadata
         return Promise.resolve()
-            // Update show
-            .then(() => this.updateShow(
-                id,
-                item.season.show,
-                fetchedAt
-            ))
-            // Update season
-            .then((show) => this.updateSeason(
-                Get(show.keys, [Plugin.id, 'id']),
-                item.season,
-                fetchedAt
-            ))
-            // Update episode
-            .then((season) => this.updateEpisode(
-                Get(season.keys, [Plugin.id, 'id']),
-                item
-            ));
+            .then(() => this.updateEpisode(showId, item))
+            .then(() => this.updateSeason(showId, item))
+            .then(() => this.updateShow(showId, item));
     }
 
-    updateShow(id, show, fetchedAt) {
-        Log.debug('Fetching show "%s"', id);
+    updateEpisode(showId, episode) {
+        let seasonId = Get(episode.season.keys, [Plugin.id, 'id']);
 
-        // Fetch show metadata
-        return Api.metadata.get(id).then((titles) => {
-            let metadata = titles[0];
+        if(IsNil(seasonId)) {
+            return Promise.resolve();
+        }
 
-            if(IsNil(metadata)) {
-                return Promise.reject(new Error('Unable to fetch show metadata'));
-            }
-
-            // Resolve year
-            return this._resolveYear(metadata).then((year) => {
-                // Update show
-                show.update(Plugin.id, {
-                    keys: {
-                        id
-                    },
-
-                    // Metadata
-                    title: metadata.title,
-                    year,
-
-                    // Timestamps
-                    fetchedAt
-                });
-
-                return show;
-            });
-        });
-    }
-
-    updateSeason(id, season, fetchedAt) {
-        Log.debug('Fetching season %d for show "%s"', season.number, id);
-
-        // Fetch season metadata
-        return Api.metadata.getShowSeason(id, season.number).then((metadata) => {
-            if(IsNil(metadata)) {
-                return Promise.reject(new Error('Unable to fetch season metadata'));
-            }
-
-            // Update season
-            season.update(Plugin.id, {
-                keys: {
-                    id: metadata.titleId
-                },
-
-                // Metadata
-                number: metadata.number,
-                year: this._getYear(metadata.releaseOrFirstAiringDate),
-
-                // Timestamps
-                fetchedAt
-            });
-
-            return season;
-        });
-    }
-
-    updateEpisode(id, episode) {
-        Log.debug('Fetching episode %dx%d for season "%s"', episode.season.number, episode.number, id);
+        Log.debug('Fetching episode %d of season "%s"', episode.number, seasonId);
 
         // Fetch episode metadata
-        return Api.metadata.getSeasonEpisode(id, episode.season.number, episode.number).then((metadata) => {
+        return Api.metadata.getSeasonEpisode(seasonId, episode.number).then((metadata) => {
             if(IsNil(metadata)) {
                 return Promise.reject(new Error('Unable to fetch episode metadata'));
+            }
+
+            let year = this._getYear(metadata.releaseOrFirstAiringDate);
+
+            // Update show
+            if(episode.season.number === 1 && episode.number === 1) {
+                episode.season.show.update(Plugin.id, { year });
+            }
+
+            // Update season
+            if(episode.number === 1) {
+                episode.season.update(Plugin.id, { year });
             }
 
             // Update episode
@@ -254,10 +206,121 @@ export class AmazonVideoActivityService extends ActivityService {
                 title: metadata.title,
                 number: metadata.number,
 
-                duration: metadata.runtime.valueMillis
+                duration: metadata.runtime.valueMillis,
+
+                // Timestamps
+                fetchedAt: Date.now()
             });
 
-            return episode;
+            return true;
+        });
+    }
+
+    updateSeason(showId, episode) {
+        Log.debug('Fetching season %d of show "%s"', episode.season.number, showId);
+
+        let seasonId;
+
+        // Fetch season metadata
+        return Api.metadata.getShowSeason(showId, episode.season.number).then((metadata) => {
+            if(IsNil(metadata)) {
+                return Promise.reject(new Error('Unable to fetch season metadata'));
+            }
+
+            // Retrieve season identifier
+            seasonId = metadata.titleId;
+
+            // Update season
+            episode.season.update(Plugin.id, {
+                keys: {
+                    id: seasonId
+                },
+
+                // Metadata
+                number: metadata.number,
+
+                // Timestamps
+                fetchedAt: Date.now()
+            });
+
+            return true;
+        }).then(() => {
+            if(!IsNil(episode.season.year)) {
+                return Promise.resolve();
+            }
+
+            Log.debug('Fetching episode 1 of season "%s"', seasonId);
+
+            // Fetch first episode in season
+            return Api.metadata.getSeasonEpisode(seasonId, 1).then((metadata) => {
+                // Update season
+                episode.season.update(Plugin.id, {
+                    year: this._getYear(metadata.releaseOrFirstAiringDate)
+                });
+            }, (err) => {
+                Log.info(
+                    'Unable to fetch episode 1 of season "%s": %s',
+                    seasonId, (err && err.message) ? err.message : err
+                );
+            });
+        }).then(() => {
+            if(!IsNil(episode.season.show.year)) {
+                return Promise.resolve();
+            }
+
+            // Update show
+            if(episode.season.number === 1) {
+                episode.season.show.update(Plugin.id, { year: episode.season.year });
+            }
+
+            return true;
+        });
+    }
+
+    updateShow(showId, episode) {
+        Log.debug('Fetching show "%s"', showId);
+
+        // Fetch show metadata
+        return Api.metadata.getShow(showId).then((metadata) => {
+            if(IsNil(metadata)) {
+                return Promise.reject(new Error('Unable to fetch show metadata'));
+            }
+
+            // Update show
+            episode.season.show.update(Plugin.id, {
+                keys: {
+                    id: showId
+                },
+
+                // Metadata
+                title: metadata.title,
+
+                // Timestamps
+                fetchedAt: Date.now()
+            });
+
+            return true;
+        }).then(() => {
+            if(!IsNil(episode.season.show.year)) {
+                return Promise.resolve();
+            }
+
+            Log.debug('Fetching episode 1x01 of show "%s"', showId);
+
+            // Fetch first episode in season
+            return Api.metadata.getShowEpisode(showId, 1, 1).then((metadata) => {
+                // Update season
+                episode.season.show.update(Plugin.id, {
+                    year: this._getYear(metadata.releaseOrFirstAiringDate)
+                });
+
+                return true;
+            }, (err) => {
+                Log.info(
+                    'Unable to fetch episode 1x01 of show "%s": %s',
+                    showId, (err && err.message) ? err.message : err
+                );
+            });
         });
     }
 
@@ -268,30 +331,6 @@ export class AmazonVideoActivityService extends ActivityService {
             Log.warn('Unable to parse date: %o', releaseOrFirstAiringDate.valueDate);
             return null;
         }
-    }
-
-    _resolveYear(title) {
-        let year = this._getYear(title.releaseOrFirstAiringDate);
-
-        // Resolve show year from first season (if earlier)
-        if(title.contentType === 'SERIES') {
-            return Api.metadata.getShowSeason(title.titleId, 1).then((season) => {
-                let seasonYear = this._getYear(season.releaseOrFirstAiringDate);
-
-                if(!IsNil(year) && !IsNil(seasonYear)) {
-                    return year < seasonYear ? year : seasonYear;
-                }
-
-                if(!IsNil(seasonYear)) {
-                    return seasonYear;
-                }
-
-                return year;
-            });
-        }
-
-        // Return title year
-        return Promise.resolve(year);
     }
 }
 

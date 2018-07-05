@@ -1,4 +1,3 @@
-import Log from '../../Core/Logger';
 import Interface from './Base';
 
 
@@ -15,6 +14,18 @@ export default class MetadataInterface extends Interface {
             .then((data) => {
                 return data.message.body.titles;
             });
+    }
+
+    getShow(showId) {
+        return this.get(showId).then((titles) => {
+            return titles[0];
+        });
+    }
+
+    getShowEpisode(showId, season, number) {
+        return this.getShowSeason(showId, season).then((season) => {
+            return this.getSeasonEpisode(season.titleId, number);
+        });
     }
 
     getShowSeasons(showIds) {
@@ -44,8 +55,7 @@ export default class MetadataInterface extends Interface {
                 return season;
             }
 
-            Log.warn('Unable to find season %d in %o', seasonNumber, seasons);
-            return null;
+            return Promise.reject(new Error('Not Found'));
         });
     }
 
@@ -65,25 +75,19 @@ export default class MetadataInterface extends Interface {
             });
     }
 
-    getSeasonEpisode(seasonId, seasonNumber, episodeNumber) {
+    getSeasonEpisode(seasonId, number) {
         return this.getSeasonEpisodes(seasonId).then((episodes) => {
             for(let i = 0; i < episodes.length; ++i) {
                 let episode = episodes[i];
-                let season = episode.ancestorTitles[1];  // TODO Match ancestors by "contentType"
 
-                if(season.number !== seasonNumber) {
-                    continue;
-                }
-
-                if(episode.number !== episodeNumber) {
+                if(episode.number !== number) {
                     continue;
                 }
 
                 return episode;
             }
 
-            Log.warn('Unable to find episode %dx%d in %o', seasonNumber, episodeNumber, episodes);
-            return null;
+            return Promise.reject(new Error('Not Found'));
         });
     }
 }
