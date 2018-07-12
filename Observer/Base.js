@@ -1,7 +1,7 @@
 import EventEmitter from 'eventemitter3';
 import ForEach from 'lodash-es/forEach';
 
-import DocumentObserver from 'neon-extension-framework/Document/Observer';
+import DocumentObserver from '@radon-extension/framework/Document/Observer';
 
 
 export default class Observer extends EventEmitter {

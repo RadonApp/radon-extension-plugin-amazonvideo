@@ -1,7 +1,7 @@
 import Merge from 'lodash-es/merge';
 import URI from 'urijs';
 
-import {fetch} from 'neon-extension-framework/Core/Fetch';
+import {fetch} from '@radon-extension/framework/Core/Fetch';
 
 import MetadataInterface from './Interfaces/Metadata';
 import ShimApi from './Shim';

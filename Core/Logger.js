@@ -1,4 +1,4 @@
-import {Logger} from 'neon-extension-framework/Core/Logger';
+import {Logger} from '@radon-extension/framework/Core/Logger';
 
 import Plugin from './Plugin';
 

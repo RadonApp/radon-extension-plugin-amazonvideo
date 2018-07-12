@@ -3,8 +3,8 @@ import IsNil from 'lodash-es/isNil';
 import Merge from 'lodash-es/merge';
 import Runtime from 'wes/runtime';
 
-import {awaitBody} from 'neon-extension-framework/Document/Await';
-import {createScript} from 'neon-extension-framework/Utilities/Script';
+import {awaitBody} from '@radon-extension/framework/Document/Await';
+import {createScript} from '@radon-extension/framework/Utilities/Script';
 
 import Log from '../Core/Logger';
 

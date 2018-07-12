@@ -2,9 +2,9 @@ import Find from 'lodash-es/find';
 import Get from 'lodash-es/get';
 import IsNil from 'lodash-es/isNil';
 
-import ActivityService, {ActivityEngine} from 'neon-extension-framework/Services/Source/Activity';
-import Registry from 'neon-extension-framework/Core/Registry';
-import {MediaTypes} from 'neon-extension-framework/Core/Enums';
+import ActivityService, {ActivityEngine} from '@radon-extension/framework/Services/Source/Activity';
+import Registry from '@radon-extension/framework/Core/Registry';
+import {MediaTypes} from '@radon-extension/framework/Core/Enums';
 
 import Api from '../Api';
 import Log from '../Core/Logger';

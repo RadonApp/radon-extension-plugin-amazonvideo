@@ -2,7 +2,7 @@
 import FetchJsonp from 'fetch-jsonp';
 import IsNil from 'lodash-es/isNil';
 
-import {generateRandomString} from 'neon-extension-framework/Utilities/Value';
+import {generateRandomString} from '@radon-extension/framework/Utilities/Value';
 
 import Resource from './Base';
 

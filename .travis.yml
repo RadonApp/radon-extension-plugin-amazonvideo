@@ -3,7 +3,7 @@ node_js:
 - '7'
 before_install:
 - npm install -g npm@'^5.10.0'
-- npm install -g NeApp/neon-extension-build#$TRAVIS_BRANCH || npm install -g NeApp/neon-extension-build#develop
+- npm install -g RadonApp/radon-extension-build#$TRAVIS_BRANCH || npm install -g RadonApp/radon-extension-build#develop
 install:
 - neb travis:install $TRAVIS_BRANCH
 - neb package:validate
@@ -21,5 +21,5 @@ deploy:
   api_key:
     secure: CoRYJS2IcwUXYzLFbx64hA3IwC8eIsJy2bxR054FHfmckgXb5Zf4xM5iP52j1GgpJz0U9bDxEASbjvxrdur7DKjYLS3oEgtbHCF2YAYNeJzjXP/K6RuB6wOgvxQBEGXFFla7g+NLCnQ1yT2hNUVHl5fayEyyV91qlj6vIYRw60u6sA/mXdhjfuVZUY1nVZ1Rf2uyt5iVSyFMJL9G0k51qjOFu0WvwccFUd/DYqaBzXnC35MFhlqxHAcKqWiS4LfwE7Lu1ZiWyUm07TzeSUUDcIqedMD8YyDDu2peHgWeURknKHP5qdpog/OfBw93gwulrrGRJdQaGYtsCAMJGh25F7uNvlf90CkLJdG+PJy0paKUURBqSTOYlFDavJiVkIHKAAlLGjS/KgRbCfcG2YEDg+jWMoY7WHsclnKRods4//SknMQChOZCljbjp+/AfXf/CPoLECkH88V4t5rNHQUREW2Q92Q759d04Wg1TMvMPJauCeqNJvphiOe165xqwQSWEVK5qWPzFtYSruxqRkgnFkWnjCWUqs13lUAr/xT4fO6xEURO85l32NSm89qUgVjtXi5UYFrJei/0oc9hLkV+wMhMAQd9z0Jrh3oB9Ae/1kiGAQOjwK0rsj8XPrBxw0uwK2x31oGpDn4XBwcLafDMvWGs+m1/uZxPTp2nZRlxx5k=
   on:
-    repo: NeApp/neon-extension-source-amazonvideo
+    repo: RadonApp/radon-extension-plugin-amazonvideo
     tags: true

@@ -254,7 +254,7 @@
       "node_modules"
     ],
     "import/project-modules": [
-      "neon-extension-*"
+      "@radon-extension/*"
     ]
   }
 }

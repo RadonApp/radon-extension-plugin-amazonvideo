@@ -2,7 +2,7 @@
 import EventEmitter from 'eventemitter3';
 import IsNil from 'lodash-es/isNil';
 
-import {Movie, Show, Season, Episode} from 'neon-extension-framework/Models/Metadata/Video';
+import {Movie, Show, Season, Episode} from '@radon-extension/framework/Models/Metadata/Video';
 
 import Log from '../Core/Logger';
 import Plugin from '../Core/Plugin';
