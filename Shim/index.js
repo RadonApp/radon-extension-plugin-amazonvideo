@@ -2,7 +2,7 @@
 import EventEmitter from 'eventemitter3';
 import IsNil from 'lodash-es/isNil';
 
-import {ConfigurationResource} from './Resources';
+import Resources from './Resources';
 
 
 export class ShimRequests extends EventEmitter {
@@ -57,7 +57,8 @@ export class Shim {
 
         // Construct resources
         this.resources = {
-            configuration: new ConfigurationResource(this)
+            configuration: new Resources.Configuration(this),
+            video: new Resources.Video(this)
         };
     }
 }
