@@ -9,15 +9,8 @@ import {createScript} from 'neon-extension-framework/Utilities/Script';
 import Log from '../Core/Logger';
 
 
-export class ShimEvents extends EventEmitter {
-    constructor() {
-        super();
-
-        // Ensure body exists
-        if(IsNil(document.body)) {
-            throw new Error('Body is not available');
-        }
-
+export class AmazonVideoShimEvents extends EventEmitter {
+    initialize() {
         // Bind to events
         this._bind('neon.event', (e) => this._onEvent(e));
     }
@@ -55,15 +48,20 @@ export class ShimEvents extends EventEmitter {
     }
 }
 
-class ShimApi extends EventEmitter {
+class AmazonVideoShim extends EventEmitter {
     constructor() {
         super();
 
+        this._events = new AmazonVideoShimEvents();
+
         this._configuration = null;
-        this._events = null;
 
         this._injected = false;
         this._injecting = null;
+    }
+
+    get events() {
+        return this._events;
     }
 
     inject(options) {
@@ -160,8 +158,8 @@ class ShimApi extends EventEmitter {
         return awaitBody().then(() => {
             let script = createScript(document, Runtime.getURL('/Modules/neon-extension-source-amazonvideo/Shim.js'));
 
-            // Create events interface
-            this._events = new ShimEvents();
+            // Initialize events interface
+            this._events.initialize();
 
             // Insert script into page
             (document.head || document.documentElement).appendChild(script);
@@ -189,4 +187,4 @@ class ShimApi extends EventEmitter {
     // endregion
 }
 
-export default new ShimApi();
+export default new AmazonVideoShim();

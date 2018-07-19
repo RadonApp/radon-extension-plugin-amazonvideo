@@ -7,6 +7,7 @@ import {Movie, Show, Season, Episode} from 'neon-extension-framework/Models/Meta
 import Log from '../Core/Logger';
 import Plugin from '../Core/Plugin';
 import PlayerObserver from '../Observer/Player';
+import ShimApi from '../Api/Shim';
 
 
 const URL_PATTERNS = [
@@ -21,6 +22,7 @@ export default class PlayerMonitor extends EventEmitter {
         super();
 
         // Private attributes
+        this._currentPageTitleId = null;
         this._currentItem = null;
         this._currentMedia = null;
 
@@ -37,6 +39,9 @@ export default class PlayerMonitor extends EventEmitter {
 
         PlayerObserver.on('progress',       this.emit.bind(this, 'progress'));
         PlayerObserver.on('seeked',         this.emit.bind(this, 'seeked'));
+
+        // Bind to shim events
+        ShimApi.events.on('video.play', this.onVideoPlay.bind(this));
     }
 
     start() {
@@ -104,7 +109,21 @@ export default class PlayerMonitor extends EventEmitter {
     onMediaChanged({ previous, current }) {
         Log.trace('PlayerMonitor.onMediaChanged: %o -> %o', previous, current);
 
+        // Update state
         this._currentMedia = current;
+    }
+
+    onVideoPlay(attributes) {
+        Log.trace('PlayerMonitor.onVideoPlay: %o', attributes);
+
+        // Ensure identifier exists
+        if(IsNil(attributes.pageTitleId)) {
+            Log.warn('No "pageTitleId" found in play attributes: %o', attributes);
+            return;
+        }
+
+        // Update state
+        this._currentPageTitleId = attributes.pageTitleId;
     }
 
     // endregion
@@ -141,7 +160,7 @@ export default class PlayerMonitor extends EventEmitter {
         }
 
         // Retrieve ASIN
-        let asin = this._getPageAsin();
+        let asin = this._getPageTitleId();
 
         if(IsNil(asin)) {
             return null;
@@ -206,25 +225,34 @@ export default class PlayerMonitor extends EventEmitter {
         });
     }
 
-    _getPageAsin() {
+    _getPageTitleId() {
         let url = window.location.href;
 
+        // Find match in the current url
         for(let i = 0; i < URL_PATTERNS.length; ++i) {
             let pattern = URL_PATTERNS[i];
             let match = pattern.exec(url);
 
             if(match === null) {
-                Log.trace('%o didn\'t match pattern %o', url, pattern);
                 continue;
             }
 
             if(match !== null) {
-                Log.trace('%o matched pattern %o: %o', url, pattern, match[1]);
+                Log.trace('Found title identifier: %o (url: %o)', match[1], url);
                 return match[1];
             }
         }
 
-        Log.warn('%o didn\'t match any url patterns', url);
+        Log.info('%o didn\'t match any patterns', url);
+
+        // Fallback to clicked title identifier
+        if(!IsNil(this._currentPageTitleId)) {
+            Log.trace('Found title identifier: %o', this._currentPageTitleId);
+            return this._currentPageTitleId;
+        }
+
+        // No title identifier found
+        Log.warn('Unable to find title identifier');
         return null;
     }
 
