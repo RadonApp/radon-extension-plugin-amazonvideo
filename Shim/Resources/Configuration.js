@@ -27,18 +27,14 @@ export default class ConfigurationResource extends Resource {
             let playerConfig = this._getPlayerConfiguration();
 
             if(IsNil(playerConfig)) {
-                return Promise.reject(new Error(
-                    'Unable to retrieve player configuration'
-                ));
+                return Promise.reject(new Error('Unable to find player configuration'));
             }
 
             // Retrieve device identifier
             let deviceId = localStorage['atvwebplayer_deviceid'];
 
             if(IsNil(deviceId)) {
-                return Promise.reject(new Error(
-                    'Unable to retrieve device identifier'
-                ));
+                return Promise.reject(new Error('Unable to find device identifier'));
             }
 
             // Emit "configuration" event
@@ -54,11 +50,11 @@ export default class ConfigurationResource extends Resource {
 
             // Resolve promise
             return true;
-        }, (err) => {
-            console.error('Unable to retrieve configuration', err && err.message ? err.message : err);
+        }).catch((err) => {
+            console.warn((err && err.message) ? err.message : err);
 
             // Emit "configuration" event
-            this._emit('configuration', null);
+            this.emit('configuration', null);
         });
     }
 
@@ -72,17 +68,13 @@ export default class ConfigurationResource extends Resource {
             jsonpCallbackFunction: 'onWebToken_' + generateRandomString(32, '0123456789abcdefghijklmnopqrstuvwxyz')
         }).then((response) => {
             if(!response.ok) {
-                return Promise.reject(new Error(
-                    'Unable to request player token'
-                ));
+                return Promise.reject(new Error('Unable to request player token'));
             }
 
             // Parse response
             return response.json().then((data) => {
                 if(IsNil(data.token)) {
-                    return Promise.reject(new Error(
-                        'Unable to request player token'
-                    ));
+                    return Promise.reject(new Error('Invalid player token'));
                 }
 
                 // Cache token

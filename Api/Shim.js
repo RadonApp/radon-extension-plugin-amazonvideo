@@ -172,6 +172,9 @@ class AmazonVideoShim extends EventEmitter {
                 this._configuration = configuration;
                 this._injected = true;
                 this._injecting = null;
+
+                // Resolve promise with ready state
+                return !IsNil(configuration);
             }, () => {
                 // Update state
                 this._configuration = null;

@@ -36,7 +36,12 @@ export class AmazonVideoActivityService extends ActivityService {
         this.engine.bind(this.player);
 
         // Inject shim
-        ShimApi.inject().then(() => {
+        ShimApi.inject().then((ready) => {
+            if(!ready) {
+                Log.warn('Unable to monitor player (no configuration found)');
+                return;
+            }
+
             // Start monitoring player
             this.player.start();
         });
