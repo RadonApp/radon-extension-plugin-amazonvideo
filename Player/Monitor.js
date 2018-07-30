@@ -118,7 +118,7 @@ export default class PlayerMonitor extends EventEmitter {
 
         // Ensure identifier exists
         if(IsNil(attributes.pageTitleId)) {
-            Log.warn('No "pageTitleId" found in play attributes: %o', attributes);
+            Log.debug('No "pageTitleId" found in play attributes: %o', attributes);
             return;
         }
 
