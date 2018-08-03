@@ -304,24 +304,22 @@ export class PlayerObserver extends Observer {
 
         Log.trace('Media detected: %o', current);
 
-        // Ensure media has changed
-        if(IsEqual(this._currentMedia, current)) {
-            return;
+        // Update current media (if changed)
+        if(!IsEqual(this._currentMedia, current)) {
+            // Store current media
+            let previous = this._currentMedia;
+
+            // Update current media
+            this._currentMedia = current;
+
+            // Emit "media.changed" event
+            this.emit('media.changed', {previous, current});
+
+            // Log media change
+            Log.trace('Media changed to %o', current);
         }
 
-        // Store current media
-        let previous = this._currentMedia;
-
-        // Update current media
-        this._currentMedia = current;
-
-        // Emit "media.changed" event
-        this.emit('media.changed', { previous, current });
-
-        // Log media change
-        Log.trace('Media changed to %o', current);
-
-        // Start observing video
+        // Ensure video is being observed
         if(!IsNil(current)) {
             this.observeVideo();
         }
