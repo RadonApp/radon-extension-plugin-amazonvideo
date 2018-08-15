@@ -1,6 +1,6 @@
 {
   "name": "neon-extension-source-amazonvideo",
-  "version": "2.1.0-beta.5",
+  "version": "2.1.0",
   "description": "Radon Extension: Amazon Video",
   "keywords": [
     "neon",
@@ -59,7 +59,7 @@
     "whatwg-fetch": "^2.0.4"
   },
   "peerDependencies": {
-    "neon-extension-framework": "^2.1.0-beta"
+    "neon-extension-framework": "^2.1"
   },
   "scripts": {
     "lint": "eslint .",
