@@ -1,4 +1,4 @@
-import Event from 'neon-extension-framework/Document/Event';
+import Event from '@radon-extension/framework/Document/Event';
 
 import Resource from './Base';
 
