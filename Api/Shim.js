@@ -156,7 +156,7 @@ class AmazonVideoShim extends EventEmitter {
 
         // Wait until body is available
         return awaitBody().then(() => {
-            let script = createScript(document, Runtime.getURL('/Modules/neon-extension-source-amazonvideo/Shim.js'));
+            let script = createScript(document, Runtime.getURL('/Plugins/amazonvideo/Shim.js'));
 
             // Initialize events interface
             this._events.initialize();
