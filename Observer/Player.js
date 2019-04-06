@@ -84,7 +84,7 @@ export class PlayerVideoObserver extends EventEmitter {
         this._loaded = true;
 
         // Emit "loaded" event
-        this.emit('loaded');
+        this.emit('loaded', this._getDuration());
         return true;
     }
 
@@ -114,6 +114,14 @@ export class PlayerVideoObserver extends EventEmitter {
         }
 
         return this._node.currentTime * 1000;
+    }
+
+    _getDuration() {
+        if(IsNil(this._node) || this._node.duration === 0) {
+            return null;
+        }
+
+        return this._node.duration * 1000;
     }
 
     _addEventListener(type, listener) {

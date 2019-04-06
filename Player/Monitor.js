@@ -71,11 +71,11 @@ export default class PlayerMonitor extends EventEmitter {
         this.emit('opened', this._currentItem);
     }
 
-    onLoaded() {
+    onLoaded(duration) {
         Log.trace('PlayerMonitor.onLoaded');
 
         // Update item
-        if(!this._updateItem()) {
+        if(!this._updateItem(duration)) {
             return;
         }
 
@@ -130,12 +130,12 @@ export default class PlayerMonitor extends EventEmitter {
 
     // region Private Methods
 
-    _updateItem() {
+    _updateItem(duration) {
         let item = null;
 
         // Try construct track
         try {
-            item = this._createItem();
+            item = this._createItem(duration);
         } catch(e) {
             Log.error('Unable to create track: %s', e.message || e);
         }
@@ -154,7 +154,7 @@ export default class PlayerMonitor extends EventEmitter {
         return true;
     }
 
-    _createItem() {
+    _createItem(duration) {
         if(IsNil(this._currentMedia)) {
             return null;
         }
@@ -171,34 +171,36 @@ export default class PlayerMonitor extends EventEmitter {
 
         // - Movie
         if(media.type === 'movie') {
-            return this._createMovie(asin, media);
+            return this._createMovie(asin, media, duration);
         }
 
         // - Episode
         if(media.type === 'episode') {
-            return this._createEpisode(asin, media);
+            return this._createEpisode(asin, media, duration);
         }
 
         // Unknown media type
         throw new Error(`Unknown media type: ${media.type}`);
     }
 
-    _createMovie(asin, { title }) {
+    _createMovie(asin, { title }, duration) {
         return Movie.create(Plugin.id, {
             keys: {
                 asin
             },
 
             // Metadata
-            title
+            title,
+            duration
         });
     }
 
-    _createEpisode(asin, { number, title, season}) {
+    _createEpisode(asin, { number, title, season }, duration) {
         return Episode.create(Plugin.id, {
             // Metadata
             number,
             title,
+            duration,
 
             // Children
             season: this._createSeason(asin, season)
