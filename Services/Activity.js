@@ -1,7 +1,6 @@
 import ActivityService, {ActivityEngine} from '@radon-extension/framework/Services/Source/Activity';
 import Registry from '@radon-extension/framework/Core/Registry';
 
-import Log from '../Core/Logger';
 import PlayerMonitor from '../Player/Monitor';
 import Plugin from '../Core/Plugin';
 import ShimApi from '../Api/Shim';
@@ -27,12 +26,7 @@ export class AmazonVideoActivityService extends ActivityService {
         this.engine.bind(this.player);
 
         // Inject shim
-        ShimApi.inject().then((ready) => {
-            if(!ready) {
-                Log.warn('Unable to monitor player (no configuration found)');
-                return;
-            }
-
+        ShimApi.inject().then(() => {
             // Start monitoring player
             this.player.start();
         });

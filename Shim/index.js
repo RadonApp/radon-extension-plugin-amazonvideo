@@ -53,13 +53,29 @@ export class ShimRequests extends EventEmitter {
 
 export class Shim {
     constructor() {
+        // Create requests handler
         this.requests = new ShimRequests();
 
         // Construct resources
         this.resources = {
-            configuration: new Resources.Configuration(this),
             video: new Resources.Video(this)
         };
+
+        // Emit "ready" event
+        this.emit('ready');
+    }
+
+    emit(type, ...args) {
+        // Construct event
+        let event = new CustomEvent('neon.event', {
+            detail: JSON.stringify({
+                type: type,
+                args: args || []
+            })
+        });
+
+        // Emit event on the document
+        document.body.dispatchEvent(event);
     }
 }
 

@@ -54,8 +54,6 @@ class AmazonVideoShim extends EventEmitter {
 
         this._events = new AmazonVideoShimEvents();
 
-        this._configuration = null;
-
         this._injected = false;
         this._injecting = null;
     }
@@ -76,16 +74,6 @@ class AmazonVideoShim extends EventEmitter {
 
         // Return current promise
         return this._injecting;
-    }
-
-    configuration(refresh = false) {
-        if(!IsNil(this._configuration) && !refresh) {
-            return Promise.resolve(this._configuration);
-        }
-
-        return this.inject().then(() =>
-            this._request('configuration')
-        );
     }
 
     // region Private Methods
@@ -161,29 +149,28 @@ class AmazonVideoShim extends EventEmitter {
             // Initialize events interface
             this._events.initialize();
 
-            // Insert script into page
-            (document.head || document.documentElement).appendChild(script);
-
-            // Wait for "configuration" event
-            return this._await('configuration', {
+            // Wait for "ready" event
+            let promise = this._await('ready', {
                 timeout: options.timeout
-            }).then((configuration) => {
+            }).then(() => {
                 // Update state
-                this._configuration = configuration;
                 this._injected = true;
                 this._injecting = null;
 
-                // Resolve promise with ready state
-                return !IsNil(configuration);
+                return true;
             }, () => {
                 // Update state
-                this._configuration = null;
                 this._injected = false;
                 this._injecting = null;
 
                 // Reject promise
                 return Promise.reject(new Error('Inject timeout'));
             });
+
+            // Insert script into page
+            (document.head || document.documentElement).appendChild(script);
+
+            return promise;
         });
     }
 
