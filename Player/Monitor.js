@@ -22,7 +22,7 @@ export default class PlayerMonitor extends EventEmitter {
         super();
 
         // Private attributes
-        this._currentPageTitleId = null;
+        this._currentId = null;
         this._currentItem = null;
         this._currentMedia = null;
 
@@ -117,13 +117,13 @@ export default class PlayerMonitor extends EventEmitter {
         Log.trace('PlayerMonitor.onVideoPlay: %o', attributes);
 
         // Ensure identifier exists
-        if(IsNil(attributes.pageTitleId)) {
-            Log.debug('No "pageTitleId" found in play attributes: %o', attributes);
+        if(IsNil(attributes.asin)) {
+            Log.debug('No "asin" found in play attributes: %o', attributes);
             return;
         }
 
         // Update state
-        this._currentPageTitleId = attributes.pageTitleId;
+        this._currentId = attributes.asin;
     }
 
     // endregion
@@ -160,9 +160,9 @@ export default class PlayerMonitor extends EventEmitter {
         }
 
         // Retrieve ASIN
-        let asin = this._getPageTitleId();
+        let keys = this._getKeys();
 
-        if(IsNil(asin)) {
+        if(IsNil(keys) || Object.keys(keys).length < 1) {
             return null;
         }
 
@@ -171,23 +171,21 @@ export default class PlayerMonitor extends EventEmitter {
 
         // - Movie
         if(media.type === 'movie') {
-            return this._createMovie(asin, media, duration);
+            return this._createMovie(keys, media, duration);
         }
 
         // - Episode
         if(media.type === 'episode') {
-            return this._createEpisode(asin, media, duration);
+            return this._createEpisode(keys, media, duration);
         }
 
         // Unknown media type
         throw new Error(`Unknown media type: ${media.type}`);
     }
 
-    _createMovie(asin, { title }, duration) {
+    _createMovie(keys, { title }, duration) {
         return Movie.create(Plugin.id, {
-            keys: {
-                asin
-            },
+            keys,
 
             // Metadata
             title,
@@ -195,7 +193,7 @@ export default class PlayerMonitor extends EventEmitter {
         });
     }
 
-    _createEpisode(asin, { number, title, season }, duration) {
+    _createEpisode(keys, { number, title, season }, duration) {
         return Episode.create(Plugin.id, {
             // Metadata
             number,
@@ -203,15 +201,13 @@ export default class PlayerMonitor extends EventEmitter {
             duration,
 
             // Children
-            season: this._createSeason(asin, season)
+            season: this._createSeason(keys, season)
         });
     }
 
-    _createSeason(asin, { number, show }) {
+    _createSeason(keys, { number, show }) {
         return Season.create(Plugin.id, {
-            keys: {
-                asin
-            },
+            keys,
 
             // Metadata
             number,
@@ -227,10 +223,11 @@ export default class PlayerMonitor extends EventEmitter {
         });
     }
 
-    _getPageTitleId() {
+    _getKeys() {
         let url = window.location.href;
+        let keys = {};
 
-        // Find match in the current url
+        // Match identifier from url
         for(let i = 0; i < URL_PATTERNS.length; ++i) {
             let pattern = URL_PATTERNS[i];
             let match = pattern.exec(url);
@@ -239,23 +236,21 @@ export default class PlayerMonitor extends EventEmitter {
                 continue;
             }
 
-            if(match !== null) {
-                Log.trace('Found title identifier: %o (url: %o)', match[1], url);
-                return match[1];
+            if(match) {
+                Log.trace('Found asin: %o (url: %o)', match[1], url);
+
+                keys['asin'] = match[1];
             }
         }
 
-        Log.info('%o didn\'t match any patterns', url);
+        // Include asin (if available)
+        if(!IsNil(this._currentId)) {
+            Log.trace('Found id: %o', this._currentId);
 
-        // Fallback to clicked title identifier
-        if(!IsNil(this._currentPageTitleId)) {
-            Log.trace('Found title identifier: %o', this._currentPageTitleId);
-            return this._currentPageTitleId;
+            keys['id'] = this._currentId;
         }
 
-        // No title identifier found
-        Log.warn('Unable to find title identifier');
-        return null;
+        return keys;
     }
 
     // endregion
