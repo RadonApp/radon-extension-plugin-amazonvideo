@@ -126,7 +126,6 @@ module.exports = function(config) {
                     '@radon-extension/core': fs.realpathSync(__dirname),
 
                     // Dependencies
-                    'lodash': 'lodash-es',
                     'lodash-amd': 'lodash-es'
                 },
 
