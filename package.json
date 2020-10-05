@@ -1,6 +1,6 @@
 {
   "name": "@radon-extension/plugin-amazonvideo",
-  "version": "2.3.1",
+  "version": "2.4.0-beta.1",
   "description": "Radon Extension: Amazon Video",
   "keywords": [
     "radon",
@@ -59,7 +59,7 @@
     "whatwg-fetch": "^2.0.4"
   },
   "peerDependencies": {
-    "@radon-extension/framework": "^2.3"
+    "@radon-extension/framework": "^2.4.0-beta"
   },
   "scripts": {
     "lint": "eslint .",

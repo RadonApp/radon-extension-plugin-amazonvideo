@@ -1,8 +1,13 @@
 [
   {
+    "name": "dependabot[bot]",
+    "email": "49699333+dependabot[bot]@users.noreply.github.com",
+    "commits": 4
+  },
+  {
     "name": "Dean Gardiner",
     "email": "me@dgardiner.net",
     "type": "lead",
-    "commits": 152
+    "commits": 157
   }
 ]
